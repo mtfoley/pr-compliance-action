@@ -110,6 +110,7 @@ const checks_1 = __nccwpck_require__(2321);
 const repoToken = core.getInput('repo-token', { required: true });
 const bodyRegexInput = core.getInput('body-regex');
 const protectedBranch = core.getInput('protected-branch');
+const filesToWatch = core.getMultilineInput('watch-files');
 const client = github.getOctokit(repoToken);
 function run() {
     var _a, _b, _c, _d, _e, _f, _g;
@@ -120,10 +121,12 @@ function run() {
             const body = (_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.body) !== null && _b !== void 0 ? _b : '';
             const title = (_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.title) !== null && _d !== void 0 ? _d : '';
             const branch = (_g = (_f = (_e = ctx.payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) !== null && _g !== void 0 ? _g : '';
+            const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
             const titleCheck = yield (0, checks_1.checkTitle)(title);
             const branchCheck = (0, checks_1.checkBranch)(branch, protectedBranch);
-            const prCompliant = bodyCheck && titleCheck && branchCheck;
+            const filesFlagged = filesModified.map(file => file.filename).filter(filename => filesToWatch.includes(filename));
+            const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
             if (!prCompliant) {
                 if (!bodyCheck)
                     core.warning(`This PR description does not refer to an issue`);
@@ -131,12 +134,20 @@ function run() {
                     core.error(`This PR has ${protectedBranch} as its head branch`);
                 if (!titleCheck)
                     core.error(`This PR's title should conform to conventional commit messages`);
+                if (filesFlagged.length > 0)
+                    core.warning(`This PR modifies the following files: ${filesFlagged.join(', ')}`);
             }
         }
         catch (error) {
             if (error instanceof Error)
                 core.setFailed(error.message);
         }
+    });
+}
+function listFiles(pullRequest) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { data: files } = yield client.rest.pulls.listFiles(pullRequest);
+        return files;
     });
 }
 run();
