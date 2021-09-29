@@ -106,6 +106,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const utils_1 = __nccwpck_require__(3030);
 const checks_1 = __nccwpck_require__(2321);
 const repoToken = core.getInput('repo-token', { required: true });
 const bodyRegexInput = core.getInput('body-regex');
@@ -136,8 +137,10 @@ function run() {
             const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
             if (!prCompliant) {
                 if (!bodyCheck)
-                    if (bodyAutoClose === true)
-                        yield closePullRequestWithComment(Object.assign(Object.assign({}, pr), { pull_number: pr.number }), bodyComment);
+                    if (bodyComment !== "")
+                        yield createComment(pr.number, bodyComment);
+                if (bodyAutoClose === true)
+                    yield closePullRequest(pr.number);
                 core.warning('PR Body did not match required format');
                 if (!branchCheck)
                     core.error(`This PR has ${protectedBranch} as its head branch`);
@@ -153,11 +156,15 @@ function run() {
         }
     });
 }
-function closePullRequestWithComment(pullRequest, comment) {
+function createComment(number, comment) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (comment.trim() !== "")
-            yield client.rest.issues.createComment(Object.assign(Object.assign({}, pullRequest), { issue_number: pullRequest.pull_number, body: comment }));
-        yield client.rest.pulls.update(Object.assign(Object.assign({}, pullRequest), { state: "closed" }));
+        if (comment.trim() !== '')
+            yield client.rest.issues.createComment(Object.assign(Object.assign({}, utils_1.context.repo), { issue_number: number, body: comment }));
+    });
+}
+function closePullRequest(number) {
+    return __awaiter(this, void 0, void 0, function* () {
+        yield client.rest.pulls.update(Object.assign(Object.assign({}, utils_1.context.repo), { pull_number: number, state: 'closed' }));
     });
 }
 function listFiles(pullRequest) {

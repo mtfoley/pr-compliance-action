@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import {context} from '@actions/github/lib/utils'
 import {checkBody, checkTitle, checkBranch} from './checks'
 
 const repoToken = core.getInput('repo-token', {required: true})
@@ -31,11 +32,8 @@ async function run(): Promise<void> {
       bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0
     if (!prCompliant) {
       if (!bodyCheck)
-        if (bodyAutoClose === true)
-          await closePullRequestWithComment(
-            {...pr, pull_number: pr.number},
-            bodyComment
-          )
+        if (bodyComment !== '') await createComment(pr.number, bodyComment)
+      if (bodyAutoClose === true) await closePullRequest(pr.number)
       core.warning('PR Body did not match required format')
       if (!branchCheck)
         core.error(`This PR has ${protectedBranch} as its head branch`)
@@ -52,21 +50,20 @@ async function run(): Promise<void> {
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
-async function closePullRequestWithComment(
-  pullRequest: {
-    owner: string
-    repo: string
-    pull_number: number
-  },
-  comment: string
-) {
+async function createComment(number: number, comment: string) {
   if (comment.trim() !== '')
     await client.rest.issues.createComment({
-      ...pullRequest,
-      issue_number: pullRequest.pull_number,
+      ...context.repo,
+      issue_number: number,
       body: comment
     })
-  await client.rest.pulls.update({...pullRequest, state: 'closed'})
+}
+async function closePullRequest(number: number) {
+  await client.rest.pulls.update({
+    ...context.repo,
+    pull_number: number,
+    state: 'closed'
+  })
 }
 async function listFiles(pullRequest: {
   owner: string
