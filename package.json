@@ -28,6 +28,8 @@
     "@actions/core": "^1.6.0"
   },
   "devDependencies": {
+    "@commitlint/config-conventional": "^13.2.0",
+    "@commitlint/lint": "^13.2.0",
     "@types/node": "^16.10.1",
     "@typescript-eslint/parser": "^4.32.0",
     "@vercel/ncc": "^0.31.1",
