@@ -14,6 +14,10 @@ inputs:
     required: true
     description: 'Protected Branch'
     default: ''
+  watch-files:
+    required: true
+    description: 'Files to flag modifications'
+    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
