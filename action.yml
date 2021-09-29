@@ -32,6 +32,19 @@ inputs:
     required: true
     description: 'Protected Branch'
     default: ''
+  protected-branch-auto-close:
+    required: true
+    description: Whether or not to auto-close on failed check of PR head branch'
+    default: true
+  protected-branch-comment:
+    required: true
+    description: 'Comment to leave on PR on failed check of PR head branch.'
+    default: >
+      Thank you for your Pull Request! In order to be considered for merging,
+      the pull request description must not be from the "main" branch. This
+      is described in our Contributing Guide. We are closing this pull request
+      and we would suggest that you implement your changes as described in our
+      documents and open a new pull request.
   watch-files:
     required: true
     description: 'Files to flag modifications'

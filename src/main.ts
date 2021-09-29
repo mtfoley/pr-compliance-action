@@ -9,6 +9,10 @@ const bodyIgnoreAuthors = core.getMultilineInput('body-ignore-authors')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
 const protectedBranch = core.getInput('protected-branch')
+const protectedBranchAutoClose = core.getBooleanInput(
+  'protected-branch-auto-close'
+)
+const protectedBranchComment = core.getInput('protected-branch-comment')
 const filesToWatch = core.getMultilineInput('watch-files')
 const client = github.getOctokit(repoToken)
 async function run(): Promise<void> {
@@ -30,7 +34,9 @@ async function run(): Promise<void> {
       .filter(filename => filesToWatch.includes(filename))
     const prCompliant =
       bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0
-    const shouldClosePr = bodyCheck === false && bodyAutoClose === true
+    const shouldClosePr =
+      (bodyCheck === false && bodyAutoClose === true) ||
+      (branchCheck === false && protectedBranchAutoClose === true)
     // Set Output values
     core.setOutput('body-check', bodyCheck)
 
@@ -40,8 +46,13 @@ async function run(): Promise<void> {
         if (bodyComment !== '') await createComment(pr.number, bodyComment)
         core.warning('PR Body did not match required format')
       }
-      if (!branchCheck)
-        core.error(`This PR has ${protectedBranch} as its head branch`)
+      if (!branchCheck) {
+        if (protectedBranchComment !== '')
+          await createComment(pr.number, protectedBranchComment)
+        core.warning(
+          `PR has ${protectedBranch} as its head branch, which is discouraged`
+        )
+      }
       if (!titleCheck)
         core.error(
           `This PR's title should conform to conventional commit messages`
