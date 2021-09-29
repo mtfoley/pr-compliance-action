@@ -18,11 +18,15 @@ async function run(): Promise<void> {
     const branchCheck = checkBranch(branch, protectedBranch)
     const prCompliant = bodyCheck && titleCheck && branchCheck
     if (!prCompliant) {
-      if(!bodyCheck) core.warning(`This PR description does not refer to an issue`)
-      if(!branchCheck) core.error(`This PR has ${protectedBranch} as its head branch`)
-      if(!titleCheck) core.error(`This PR's title should conform to conventional commit messages`)
+      if (!bodyCheck)
+        core.warning(`This PR description does not refer to an issue`)
+      if (!branchCheck)
+        core.error(`This PR has ${protectedBranch} as its head branch`)
+      if (!titleCheck)
+        core.error(
+          `This PR's title should conform to conventional commit messages`
+        )
     }
-    
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
