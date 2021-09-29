@@ -10,6 +10,19 @@ inputs:
     required: true
     description: 'PR Body Regex'
     default: '(fix|clos|resolv)(es)* #\d+'
+  body-ignore-authors:
+    required: true
+    description: 'Authors to ignore for PR body regex (e.g. dependabot[bot]'
+    default: >
+      dependabot
+      dependabot[bot]
+  body-auto-close:
+    required: true
+    description: 'Whether or not to auto-close on failed check of PR Body'
+    default: true
+  body-comment:
+    required: true
+    description: 'Comment to leave on PR on failed check of PR Body'
   protected-branch:
     required: true
     description: 'Protected Branch'

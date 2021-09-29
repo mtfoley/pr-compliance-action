@@ -4,6 +4,9 @@ import {checkBody, checkTitle, checkBranch} from './checks'
 
 const repoToken = core.getInput('repo-token', {required: true})
 const bodyRegexInput = core.getInput('body-regex')
+const bodyIgnoreAuthors = core.getMultilineInput('body-ignore-authors')
+const bodyAutoClose = core.getBooleanInput('body-auto-close')
+const bodyComment = core.getInput('body-comment')
 const protectedBranch = core.getInput('protected-branch')
 const filesToWatch = core.getMultilineInput('watch-files')
 const client = github.getOctokit(repoToken)
@@ -11,11 +14,13 @@ async function run(): Promise<void> {
   try {
     const ctx = github.context
     const pr = ctx.issue
+    const author = ctx.payload.pull_request?.user?.login ?? ''
     const body = ctx.payload.pull_request?.body ?? ''
     const title = ctx.payload.pull_request?.title ?? ''
     const branch = ctx.payload.pull_request?.head?.ref ?? ''
     const filesModified = await listFiles({...pr, pull_number: pr.number})
-    const bodyCheck = checkBody(body, bodyRegexInput)
+    // bodyCheck passes if the author is to be ignored or if the check function passes
+    const bodyCheck = bodyIgnoreAuthors.includes(author) || checkBody(body, bodyRegexInput)
     const titleCheck = await checkTitle(title)
     const branchCheck = checkBranch(branch, protectedBranch)
     const filesFlagged = filesModified
@@ -25,7 +30,8 @@ async function run(): Promise<void> {
       bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0
     if (!prCompliant) {
       if (!bodyCheck)
-        core.warning(`This PR description does not refer to an issue`)
+        if(bodyAutoClose === true) await closePullRequestWithComment({...pr,pull_number:pr.number},bodyComment)
+        core.warning('PR Body did not match required format')
       if (!branchCheck)
         core.error(`This PR has ${protectedBranch} as its head branch`)
       if (!titleCheck)
@@ -40,6 +46,14 @@ async function run(): Promise<void> {
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
+}
+async function closePullRequestWithComment(pullRequest: {
+  owner: string
+  repo: string
+  pull_number: number
+},comment:string) {
+  if(comment.trim() !== "") await client.rest.issues.createComment({...pullRequest,issue_number:pullRequest.pull_number,body:comment})
+  await client.rest.pulls.update({...pullRequest,state:"closed"})
 }
 async function listFiles(pullRequest: {
   owner: string
