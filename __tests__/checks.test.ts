@@ -19,21 +19,18 @@ const makePr = (overrides:object)=>{
     return {...templatePr,...overrides}
 }
 test('checkBody false on empty', () => {
-    const pr = makePr({body:''})
     const regexString = '(fixes|closes) #\d+'
-    const check = checkBody(pr,regexString)
+    const check = checkBody('',regexString)
     expect(check).toBeFalsy()
 })
 test('checkBody false on invalid issue reference', () => {
-    const pr = makePr({body:badBody})
     const regexString = '(fixes|closes) #\\d+'
-    const check = checkBody(pr,regexString)
+    const check = checkBody(badBody,regexString)
     expect(check).toBeFalsy()
 })
 test('checkBody true on valid message with multiline', () => {
-    const pr = makePr({body:goodBody})
     const regexString = '(fixes|closes) #\\d+'
-    const check = checkBody(pr,regexString)
+    const check = checkBody(goodBody,regexString)
     expect(check).toBeTruthy()
 })
 test('checkTitle false on empty', async () => {

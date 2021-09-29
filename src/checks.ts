@@ -34,9 +34,9 @@ type LintResult = {
     valid: Boolean,
     errors: LintResultError[];
 };
-function checkBody(pullRequest: PullRequest, regexString: string): Boolean {
+function checkBody(body:string, regexString: string): Boolean {
     const regex = new RegExp(regexString,"mi");
-    return regex.test(pullRequest.body);
+    return regex.test(body);
 }
 
 function checkBranch(pullRequest: PullRequest, protectedBranch: string): Boolean {
