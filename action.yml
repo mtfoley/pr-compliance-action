@@ -36,6 +36,9 @@ inputs:
     required: true
     description: 'Files to flag modifications'
     default: ''
+outputs:
+  body-check:
+    description: 'Result of match for PR Body against configured regex.'
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -135,8 +135,11 @@ function run() {
                 .map(file => file.filename)
                 .filter(filename => filesToWatch.includes(filename));
             const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
-            const shouldClosePr = (bodyCheck === false && bodyAutoClose === true);
+            const shouldClosePr = bodyCheck === false && bodyAutoClose === true;
+            // Set Output values
+            core.setOutput('body-check', bodyCheck);
             if (!prCompliant) {
+                // Handle failed body check
                 if (!bodyCheck) {
                     if (bodyComment !== '')
                         yield createComment(pr.number, bodyComment);

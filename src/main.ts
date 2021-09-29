@@ -31,7 +31,11 @@ async function run(): Promise<void> {
     const prCompliant =
       bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0
     const shouldClosePr = bodyCheck === false && bodyAutoClose === true
+    // Set Output values
+    core.setOutput('body-check', bodyCheck)
+
     if (!prCompliant) {
+      // Handle failed body check
       if (!bodyCheck) {
         if (bodyComment !== '') await createComment(pr.number, bodyComment)
         core.warning('PR Body did not match required format')
