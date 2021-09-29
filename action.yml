@@ -1,11 +1,15 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'PR Compliance Action'
+description: 'Action to check PR compliance on various aspects'
+author: 'Matthew Foley'
 inputs:
-  milliseconds: # change this
+  repo-token:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Repo Access Token'
+    default: ''
+  body-regex:
+    required: true
+    description: 'PR Body Regex'
+    default: '(fix|clos|resolv)(es)* #\\d+'
 runs:
   using: 'node12'
   main: 'dist/index.js'

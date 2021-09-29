@@ -1,18 +1,19 @@
-import * as core from '@actions/core'
-import {wait} from './wait'
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+import { checkBody, checkTitle, checkBranch } from './checks';
 
+const repoToken = core.getInput("repo-token",{required:true});
+const bodyRegexInput = core.getInput("body-regex")
+const client = github.getOctokit(repoToken);
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
+    const ctx = github.context;
+    const pr = ctx.issue;
+    const body = ctx.payload.pull_request?.body ?? "";
+    const title = ctx.payload.pull_request?.title ?? "";
+    const bodyCheck = checkBody(body,bodyRegexInput);
   } catch (error) {
-    core.setFailed(error.message)
+    if(error instanceof Error) core.setFailed(error.message)
   }
 }
 
