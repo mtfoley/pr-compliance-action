@@ -9,7 +9,7 @@ inputs:
   body-regex:
     required: true
     description: 'PR Body Regex'
-    default: '(fix|clos|resolv)(es)* #\\d+'
+    default: '(fix|clos|resolv)(es)* #\d+'
   protected-branch:
     required: true
     description: 'Protected Branch'
