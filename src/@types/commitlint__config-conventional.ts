@@ -1,1 +1,1 @@
-declare module '@commitlint/config-conventional';
+declare module '@commitlint/config-conventional'
