@@ -109,27 +109,36 @@ const github = __importStar(__nccwpck_require__(5438));
 const checks_1 = __nccwpck_require__(2321);
 const repoToken = core.getInput('repo-token', { required: true });
 const bodyRegexInput = core.getInput('body-regex');
+const bodyIgnoreAuthors = core.getMultilineInput('body-ignore-authors');
+const bodyAutoClose = core.getBooleanInput('body-auto-close');
+const bodyComment = core.getInput('body-comment');
 const protectedBranch = core.getInput('protected-branch');
 const filesToWatch = core.getMultilineInput('watch-files');
 const client = github.getOctokit(repoToken);
 function run() {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const ctx = github.context;
             const pr = ctx.issue;
-            const body = (_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.body) !== null && _b !== void 0 ? _b : '';
-            const title = (_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.title) !== null && _d !== void 0 ? _d : '';
-            const branch = (_g = (_f = (_e = ctx.payload.pull_request) === null || _e === void 0 ? void 0 : _e.head) === null || _f === void 0 ? void 0 : _f.ref) !== null && _g !== void 0 ? _g : '';
+            const author = (_c = (_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : '';
+            const body = (_e = (_d = ctx.payload.pull_request) === null || _d === void 0 ? void 0 : _d.body) !== null && _e !== void 0 ? _e : '';
+            const title = (_g = (_f = ctx.payload.pull_request) === null || _f === void 0 ? void 0 : _f.title) !== null && _g !== void 0 ? _g : '';
+            const branch = (_k = (_j = (_h = ctx.payload.pull_request) === null || _h === void 0 ? void 0 : _h.head) === null || _j === void 0 ? void 0 : _j.ref) !== null && _k !== void 0 ? _k : '';
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
-            const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
+            // bodyCheck passes if the author is to be ignored or if the check function passes
+            const bodyCheck = bodyIgnoreAuthors.includes(author) || (0, checks_1.checkBody)(body, bodyRegexInput);
             const titleCheck = yield (0, checks_1.checkTitle)(title);
             const branchCheck = (0, checks_1.checkBranch)(branch, protectedBranch);
-            const filesFlagged = filesModified.map(file => file.filename).filter(filename => filesToWatch.includes(filename));
+            const filesFlagged = filesModified
+                .map(file => file.filename)
+                .filter(filename => filesToWatch.includes(filename));
             const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
             if (!prCompliant) {
                 if (!bodyCheck)
-                    core.warning(`This PR description does not refer to an issue`);
+                    if (bodyAutoClose === true)
+                        yield closePullRequestWithComment(Object.assign(Object.assign({}, pr), { pull_number: pr.number }), bodyComment);
+                core.warning('PR Body did not match required format');
                 if (!branchCheck)
                     core.error(`This PR has ${protectedBranch} as its head branch`);
                 if (!titleCheck)
@@ -142,6 +151,13 @@ function run() {
             if (error instanceof Error)
                 core.setFailed(error.message);
         }
+    });
+}
+function closePullRequestWithComment(pullRequest, comment) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (comment.trim() !== "")
+            yield client.rest.issues.createComment(Object.assign(Object.assign({}, pullRequest), { issue_number: pullRequest.pull_number, body: comment }));
+        yield client.rest.pulls.update(Object.assign(Object.assign({}, pullRequest), { state: "closed" }));
     });
 }
 function listFiles(pullRequest) {
