@@ -23,6 +23,10 @@ inputs:
   body-comment:
     required: true
     description: 'Comment to leave on PR on failed check of PR Body'
+    default: >
+      Thank you for your Pull Request! In order to be considered for merging,
+      the pull request description must refer to a specific issue number. This
+      is described in our Contributing Guide.
   protected-branch:
     required: true
     description: 'Protected Branch'
