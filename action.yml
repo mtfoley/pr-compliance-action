@@ -10,6 +10,10 @@ inputs:
     required: true
     description: 'PR Body Regex'
     default: '(fix|clos|resolv)(es)* #\\d+'
+  protected-branch:
+    required: true
+    description: 'Protected Branch'
+    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
