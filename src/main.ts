@@ -30,11 +30,12 @@ async function run(): Promise<void> {
       .filter(filename => filesToWatch.includes(filename))
     const prCompliant =
       bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0
+    const shouldClosePr = bodyCheck === false && bodyAutoClose === true
     if (!prCompliant) {
-      if (!bodyCheck)
+      if (!bodyCheck) {
         if (bodyComment !== '') await createComment(pr.number, bodyComment)
-      if (bodyAutoClose === true) await closePullRequest(pr.number)
-      core.warning('PR Body did not match required format')
+        core.warning('PR Body did not match required format')
+      }
       if (!branchCheck)
         core.error(`This PR has ${protectedBranch} as its head branch`)
       if (!titleCheck)
@@ -45,6 +46,8 @@ async function run(): Promise<void> {
         core.warning(
           `This PR modifies the following files: ${filesFlagged.join(', ')}`
         )
+      // Finally close PR if warranted
+      if (shouldClosePr) await closePullRequest(pr.number)
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

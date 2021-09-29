@@ -26,7 +26,8 @@ inputs:
     default: >
       Thank you for your Pull Request! In order to be considered for merging,
       the pull request description must refer to a specific issue number. This
-      is described in our Contributing Guide.
+      is described in our Contributing Guide. We are closing this issue for now
+      but you can update the pull request description and reopen it.
   protected-branch:
     required: true
     description: 'Protected Branch'

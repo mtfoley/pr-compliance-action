@@ -135,19 +135,22 @@ function run() {
                 .map(file => file.filename)
                 .filter(filename => filesToWatch.includes(filename));
             const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
+            const shouldClosePr = (bodyCheck === false && bodyAutoClose === true);
             if (!prCompliant) {
-                if (!bodyCheck)
-                    if (bodyComment !== "")
+                if (!bodyCheck) {
+                    if (bodyComment !== '')
                         yield createComment(pr.number, bodyComment);
-                if (bodyAutoClose === true)
-                    yield closePullRequest(pr.number);
-                core.warning('PR Body did not match required format');
+                    core.warning('PR Body did not match required format');
+                }
                 if (!branchCheck)
                     core.error(`This PR has ${protectedBranch} as its head branch`);
                 if (!titleCheck)
                     core.error(`This PR's title should conform to conventional commit messages`);
                 if (filesFlagged.length > 0)
                     core.warning(`This PR modifies the following files: ${filesFlagged.join(', ')}`);
+                // Finally close PR if warranted
+                if (shouldClosePr)
+                    yield closePullRequest(pr.number);
             }
         }
         catch (error) {
