@@ -1,105 +1,36 @@
-<p align="center">
-  <a href="https://github.com/actions/typescript-action/actions"><img alt="typescript-action status" src="https://github.com/actions/typescript-action/workflows/build-test/badge.svg"></a>
-</p>
+# pr-compliance-action
 
-# Create a JavaScript Action using TypeScript
+This action is meant to help in managing inbound PRs that may need adjustment other than code.
 
-Use this template to bootstrap the creation of a TypeScript action.:rocket:
+## Functionality
 
-This template includes compilation support, tests, a validation workflow, publishing, and versioning guidance.  
+It looks for the following:
+- [x] PR Title formatted according to [@commitlint/conventional-commit](https://www.conventionalcommits.org/en/v1.0.0/).
+- [x] PR Body refers to an issue, as detected by a regular expression
+- [x] PR originates from a protected branch e.g. "main", (based on head ref)
+- [x] PR includes modifications to specific files that should be reviewed carefully (e.g. package.json)
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+## Behavior
 
-## Create an action from this template
+This action drives the following outcomes:
 
-Click the `Use this Template` and provide the new repo details for your action
+Check | Outcome on Failure
+--- | ---
+PR Title Lint | Action shows as failed check. Action leaves comment.
+PR Refers to Issue | Action closes issue. Action leaves comment.
+PR Originates from Protected Branch | Action closes issue. Action leaves comment.
+PR Avoids Watched Files | Action leaves comment.
 
-## Code in Main
+## Inputs
 
-> First, you'll need to have a reasonably modern version of `node` handy. This won't work with versions older than 9, for instance.
+All inputs are required and all have default values. The only input absolutely require to be specified in a workflow file is the `repo-token` input.
 
-Install the dependencies  
-```bash
-$ npm install
-```
+Name | Default | Description
+--- | --- | ---
 
-Build the typescript and package it for distribution
-```bash
-$ npm run build && npm run package
-```
+## Outputs
 
-Run the tests :heavy_check_mark:  
-```bash
-$ npm test
+Each check performed is also manifested in an output.
 
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
-
-...
-```
-
-## Change action.yml
-
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-import * as core from '@actions/core';
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Publish to a distribution branch
-
-Actions are run from GitHub repos so we will checkin the packed dist folder. 
-
-Then run [ncc](https://github.com/zeit/ncc) and push the results:
-```bash
-$ npm run package
-$ git add dist
-$ git commit -a -m "prod dependencies"
-$ git push origin releases/v1
-```
-
-Note: We recommend using the `--license` option for ncc, which will create a license file for all of the production node modules used in your project.
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Validate
-
-You can now validate the action by referencing `./` in a workflow in your repo (see [test.yml](.github/workflows/test.yml))
-
-```yaml
-uses: ./
-with:
-  milliseconds: 1000
-```
-
-See the [actions tab](https://github.com/actions/typescript-action/actions) for runs of this action! :rocket:
-
-## Usage:
-
-After testing you can [create a v1 tag](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md) to reference the stable and latest V1 action
+Name | Description
+--- | ---
