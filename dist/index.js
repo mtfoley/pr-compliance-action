@@ -109,8 +109,8 @@ const github = __importStar(__nccwpck_require__(5438));
 const utils_1 = __nccwpck_require__(3030);
 const checks_1 = __nccwpck_require__(2321);
 const repoToken = core.getInput('repo-token', { required: true });
+const ignoreAuthors = core.getMultilineInput('ignore-authors');
 const bodyRegexInput = core.getInput('body-regex');
-const bodyIgnoreAuthors = core.getMultilineInput('body-ignore-authors');
 const bodyAutoClose = core.getBooleanInput('body-auto-close');
 const bodyComment = core.getInput('body-comment');
 const protectedBranch = core.getInput('protected-branch');
@@ -122,18 +122,35 @@ const filesToWatch = core.getMultilineInput('watch-files');
 const watchedFilesComment = core.getInput('watch-files-comment');
 const client = github.getOctokit(repoToken);
 function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const ctx = github.context;
             const pr = ctx.issue;
-            const author = (_c = (_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.login) !== null && _c !== void 0 ? _c : '';
-            const body = (_e = (_d = ctx.payload.pull_request) === null || _d === void 0 ? void 0 : _d.body) !== null && _e !== void 0 ? _e : '';
-            const title = (_g = (_f = ctx.payload.pull_request) === null || _f === void 0 ? void 0 : _f.title) !== null && _g !== void 0 ? _g : '';
-            const branch = (_k = (_j = (_h = ctx.payload.pull_request) === null || _h === void 0 ? void 0 : _h.head) === null || _j === void 0 ? void 0 : _j.ref) !== null && _k !== void 0 ? _k : '';
+            const isDraft = ((_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.draft) !== null && _b !== void 0 ? _b : false) === true;
+            if (isDraft) {
+                core.info('PR is a draft, skipping checks, setting all outputs to false.');
+                core.setOutput('body-check', false);
+                core.setOutput('branch-check', false);
+                core.setOutput('title-check', false);
+                core.setOutput('watched-files-check', false);
+                return;
+            }
+            const author = (_e = (_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.login) !== null && _e !== void 0 ? _e : '';
+            if (ignoreAuthors.includes(author)) {
+                core.info('PR is by ignored author, skipping checks, setting all outputs to true.');
+                core.setOutput('body-check', true);
+                core.setOutput('branch-check', true);
+                core.setOutput('title-check', true);
+                core.setOutput('watched-files-check', true);
+                return;
+            }
+            const body = (_g = (_f = ctx.payload.pull_request) === null || _f === void 0 ? void 0 : _f.body) !== null && _g !== void 0 ? _g : '';
+            const title = (_j = (_h = ctx.payload.pull_request) === null || _h === void 0 ? void 0 : _h.title) !== null && _j !== void 0 ? _j : '';
+            const branch = (_m = (_l = (_k = ctx.payload.pull_request) === null || _k === void 0 ? void 0 : _k.head) === null || _l === void 0 ? void 0 : _l.ref) !== null && _m !== void 0 ? _m : '';
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
-            const bodyCheck = bodyIgnoreAuthors.includes(author) || (0, checks_1.checkBody)(body, bodyRegexInput);
+            const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
@@ -157,7 +174,7 @@ function run() {
                     core.warning('PR Body did not match required format');
                 }
                 if (!branchCheck) {
-                    const branchCommentRegex = new RegExp("%branch%", "gi");
+                    const branchCommentRegex = new RegExp('%branch%', 'gi');
                     if (protectedBranchComment !== '')
                         yield createComment(pr.number, protectedBranchComment.replace(branchCommentRegex, protectedBranch));
                     core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);

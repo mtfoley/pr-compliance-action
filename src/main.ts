@@ -22,8 +22,8 @@ async function run(): Promise<void> {
   try {
     const ctx = github.context
     const pr = ctx.issue
-    const isDraft = (ctx.payload.pull_request?.draft ?? false) === true;
-    if(isDraft){
+    const isDraft = (ctx.payload.pull_request?.draft ?? false) === true
+    if (isDraft) {
       core.info('PR is a draft, skipping checks, setting all outputs to false.')
       core.setOutput('body-check', false)
       core.setOutput('branch-check', false)
@@ -32,8 +32,10 @@ async function run(): Promise<void> {
       return
     }
     const author = ctx.payload.pull_request?.user?.login ?? ''
-    if(ignoreAuthors.includes(author)){
-      core.info('PR is by ignored author, skipping checks, setting all outputs to true.')
+    if (ignoreAuthors.includes(author)) {
+      core.info(
+        'PR is by ignored author, skipping checks, setting all outputs to true.'
+      )
       core.setOutput('body-check', true)
       core.setOutput('branch-check', true)
       core.setOutput('title-check', true)
