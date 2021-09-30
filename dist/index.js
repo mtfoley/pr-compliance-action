@@ -116,6 +116,8 @@ const bodyComment = core.getInput('body-comment');
 const protectedBranch = core.getInput('protected-branch');
 const protectedBranchAutoClose = core.getBooleanInput('protected-branch-auto-close');
 const protectedBranchComment = core.getInput('protected-branch-comment');
+const titleComment = core.getInput('title-comment');
+const titleCheckEnable = core.getBooleanInput('title-check-enable');
 const filesToWatch = core.getMultilineInput('watch-files');
 const client = github.getOctokit(repoToken);
 function run() {
@@ -131,7 +133,7 @@ function run() {
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = bodyIgnoreAuthors.includes(author) || (0, checks_1.checkBody)(body, bodyRegexInput);
-            const { valid: titleCheck } = yield (0, checks_1.checkTitle)(title);
+            const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable ? { valid: true, errors: [] } : yield (0, checks_1.checkTitle)(title);
             const branchCheck = (0, checks_1.checkBranch)(branch, protectedBranch);
             const filesFlagged = filesModified
                 .map(file => file.filename)
@@ -141,6 +143,8 @@ function run() {
                 (branchCheck === false && protectedBranchAutoClose === true);
             // Set Output values
             core.setOutput('body-check', bodyCheck);
+            core.setOutput('branch-check', branchCheck);
+            core.setOutput('title-check', titleCheck);
             if (!prCompliant) {
                 // Handle failed body check
                 if (!bodyCheck) {
@@ -153,8 +157,12 @@ function run() {
                         yield createComment(pr.number, protectedBranchComment);
                     core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);
                 }
-                if (!titleCheck)
-                    core.error(`This PR's title should conform to conventional commit messages`);
+                if (!titleCheck) {
+                    const errorsComment = '\nLinting Errors\n\n' + titleErrors.map(error => `\n- ${error.message}`);
+                    if (titleComment !== '')
+                        createComment(pr.number, titleComment + errorsComment);
+                    core.error(`This PR's title should conform to @commitlint/conventional-commit`);
+                }
                 if (filesFlagged.length > 0)
                     core.warning(`This PR modifies the following files: ${filesFlagged.join(', ')}`);
                 // Finally close PR if warranted

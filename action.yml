@@ -45,6 +45,16 @@ inputs:
       is described in our Contributing Guide. We are closing this pull request
       and we would suggest that you implement your changes as described in our
       documents and open a new pull request.
+  title-check-enable:
+    required: true
+    description: 'Whether or not to lint PR title per @commitlint/conventional-commit.'
+    default: true
+  title-comment: 
+    required: true
+    description: 'Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit'>
+    Thank you for your Pull Request! In order to be considered for merging,
+    the pull request title must match the specification in [@commitlint/conventional-commit]
+    (https://www.conventionalcommits.org/en/v1.0.0/).
   watch-files:
     required: true
     description: 'Files to flag modifications'
@@ -52,6 +62,10 @@ inputs:
 outputs:
   body-check:
     description: 'Result of match for PR Body against configured regex.'
+  branch-check:
+    description: 'Result of check to ensure PR head is not protected branch.'
+  title-check:
+    description: 'Result of check to ensure PR title is formattd per @commitlint/conventional-commit'
 runs:
   using: 'node12'
   main: 'dist/index.js'

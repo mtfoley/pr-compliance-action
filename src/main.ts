@@ -13,6 +13,8 @@ const protectedBranchAutoClose = core.getBooleanInput(
   'protected-branch-auto-close'
 )
 const protectedBranchComment = core.getInput('protected-branch-comment')
+const titleComment = core.getInput('title-comment')
+const titleCheckEnable = core.getBooleanInput('title-check-enable')
 const filesToWatch = core.getMultilineInput('watch-files')
 const client = github.getOctokit(repoToken)
 async function run(): Promise<void> {
@@ -27,7 +29,9 @@ async function run(): Promise<void> {
     // bodyCheck passes if the author is to be ignored or if the check function passes
     const bodyCheck =
       bodyIgnoreAuthors.includes(author) || checkBody(body, bodyRegexInput)
-    const {valid: titleCheck} = await checkTitle(title)
+    const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
+      ? {valid: true, errors: []}
+      : await checkTitle(title)
     const branchCheck = checkBranch(branch, protectedBranch)
     const filesFlagged = filesModified
       .map(file => file.filename)
@@ -39,7 +43,8 @@ async function run(): Promise<void> {
       (branchCheck === false && protectedBranchAutoClose === true)
     // Set Output values
     core.setOutput('body-check', bodyCheck)
-
+    core.setOutput('branch-check', branchCheck)
+    core.setOutput('title-check', titleCheck)
     if (!prCompliant) {
       // Handle failed body check
       if (!bodyCheck) {
@@ -53,10 +58,16 @@ async function run(): Promise<void> {
           `PR has ${protectedBranch} as its head branch, which is discouraged`
         )
       }
-      if (!titleCheck)
+      if (!titleCheck) {
+        const errorsComment =
+          '\nLinting Errors\n\n' +
+          titleErrors.map(error => `\n- ${error.message}`)
+        if (titleComment !== '')
+          createComment(pr.number, titleComment + errorsComment)
         core.error(
-          `This PR's title should conform to conventional commit messages`
+          `This PR's title should conform to @commitlint/conventional-commit`
         )
+      }
       if (filesFlagged.length > 0)
         core.warning(
           `This PR modifies the following files: ${filesFlagged.join(', ')}`
