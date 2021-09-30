@@ -22,6 +22,15 @@ async function run(): Promise<void> {
   try {
     const ctx = github.context
     const pr = ctx.issue
+    const isDraft = (ctx.payload.pull_request?.draft ?? false) === true;
+    if(isDraft){
+      core.info('PR is a draft, skipping checks, setting all outputs to false.')
+      core.setOutput('body-check', false)
+      core.setOutput('branch-check', false)
+      core.setOutput('title-check', false)
+      core.setOutput('watched-files-check', false)
+      return
+    }
     const author = ctx.payload.pull_request?.user?.login ?? ''
     const body = ctx.payload.pull_request?.body ?? ''
     const title = ctx.payload.pull_request?.title ?? ''
