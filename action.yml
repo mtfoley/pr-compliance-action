@@ -79,10 +79,10 @@ inputs:
       the title in order for this check to pass.
 
       Most often, our PR titles are something like one of these:
-      
-      - "docs: correct typo in README"
-      - "feat: implement dark mode"
-      - "fix: correct remove button behavior"
+
+      - docs: correct typo in README
+      - feat: implement dark mode"
+      - fix: correct remove button behavior
   watch-files:
     required: true
     description: 'Files to flag modifications'
