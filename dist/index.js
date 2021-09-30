@@ -162,14 +162,14 @@ function run() {
                     core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);
                 }
                 if (!titleCheck) {
-                    const errorsComment = '\nLinting Errors\n\n' +
+                    const errorsComment = '\n\nLinting Errors\n' +
                         titleErrors.map(error => `\n- ${error.message}`).join('');
                     if (titleComment !== '')
                         yield createComment(pr.number, titleComment + errorsComment);
                     core.error(`This PR's title should conform to @commitlint/conventional-commit`);
                 }
                 if (filesFlagged.length > 0) {
-                    const filesList = '\nFiles Matched\n\n' +
+                    const filesList = '\n\nFiles Matched\n' +
                         filesFlagged.map(file => `\n- ${file}`).join('');
                     if (watchedFilesComment !== '')
                         yield createComment(pr.number, watchedFilesComment + filesList);

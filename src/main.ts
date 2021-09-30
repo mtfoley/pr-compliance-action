@@ -63,7 +63,7 @@ async function run(): Promise<void> {
       }
       if (!titleCheck) {
         const errorsComment =
-          '\nLinting Errors\n\n' +
+          '\n\nLinting Errors\n' +
           titleErrors.map(error => `\n- ${error.message}`).join('')
         if (titleComment !== '')
           await createComment(pr.number, titleComment + errorsComment)
@@ -73,7 +73,7 @@ async function run(): Promise<void> {
       }
       if (filesFlagged.length > 0) {
         const filesList =
-          '\nFiles Matched\n\n' +
+          '\n\nFiles Matched\n' +
           filesFlagged.map(file => `\n- ${file}`).join('')
         if (watchedFilesComment !== '')
           await createComment(pr.number, watchedFilesComment + filesList)

@@ -54,8 +54,8 @@ inputs:
     description: 'Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit'
     default: >
       Thank you for your Pull Request! In order to be considered for merging,
-      the pull request title must match the specification in [@commitlint/conventional-commit]
-      (https://www.conventionalcommits.org/en/v1.0.0/).
+      the pull request title must match the specification in 
+      [@commitlint/conventional-commit](https://www.conventionalcommits.org/en/v1.0.0/).
   watch-files:
     required: true
     description: 'Files to flag modifications'
