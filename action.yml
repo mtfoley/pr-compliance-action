@@ -21,6 +21,7 @@ inputs:
       the action may have multiple sections to any generated comment.
     default: >
       # PR Compliance Checks
+
       Thank you for your Pull Request! We have run several checks on this pull request in order
       to make sure it's suitable for merging into this project.  The results are listed in the 
       following section.
@@ -37,6 +38,7 @@ inputs:
     description: 'Comment to leave on PR on failed check of PR Body'
     default: >
       ## Issue Reference
+      
       In order to be considered for merging, the pull request description must refer to a 
       specific issue number. This is described in our Contributing Guide. We are closing this 
       pull request for now but you can update the pull request description and reopen the pull 
@@ -54,6 +56,7 @@ inputs:
     description: 'Comment to leave on PR on failed check of PR head branch.'
     default: >
       ## Protected Branch
+      
       In order to be considered for merging, the pull request description must 
       not be from the "%branch%" branch. This is described in our Contributing Guide. 
       We are closing this pull request and we would suggest that you implement your changes as 
@@ -67,6 +70,7 @@ inputs:
     description: 'Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit'
     default: >
       ## Conventional Commit PR Title
+      
       In order to be considered for merging, the pull request title must match the specification in 
       [@commitlint/conventional-commit](https://www.conventionalcommits.org/en/v1.0.0/). You can edit
       the title in order for this check to pass.
@@ -79,6 +83,7 @@ inputs:
     description: 'Comment to leave on PR when watched files have been changed.'
     default: >
       ## Watched Files
+      
       This pull request modifies specific files that require careful review by the maintainers.
 outputs:
   body-check:
