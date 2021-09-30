@@ -1,11 +1,6 @@
 name: 'PR Compliance Action'
 description: >
-  Action to check PR compliance on various aspects:
-  
-  - PR Title vs @commitlint/conventional-commit
-  - PR Body referring to an issue
-  - PR Head branch not being a protected branch
-  - PR modifying specific files
+  Action to check PR compliance on various aspects to improve maintainer QOL.
 icon: git-pull-request
 color: green
 author: 'Matthew Foley'
