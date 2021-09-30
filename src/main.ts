@@ -4,8 +4,8 @@ import {context} from '@actions/github/lib/utils'
 import {checkBody, checkTitle, checkBranch} from './checks'
 
 const repoToken = core.getInput('repo-token', {required: true})
+const ignoreAuthors = core.getMultilineInput('ignore-authors')
 const bodyRegexInput = core.getInput('body-regex')
-const bodyIgnoreAuthors = core.getMultilineInput('body-ignore-authors')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
 const protectedBranch = core.getInput('protected-branch')
@@ -32,13 +32,20 @@ async function run(): Promise<void> {
       return
     }
     const author = ctx.payload.pull_request?.user?.login ?? ''
+    if(ignoreAuthors.includes(author)){
+      core.info('PR is by ignored author, skipping checks, setting all outputs to true.')
+      core.setOutput('body-check', true)
+      core.setOutput('branch-check', true)
+      core.setOutput('title-check', true)
+      core.setOutput('watched-files-check', true)
+      return
+    }
     const body = ctx.payload.pull_request?.body ?? ''
     const title = ctx.payload.pull_request?.title ?? ''
     const branch = ctx.payload.pull_request?.head?.ref ?? ''
     const filesModified = await listFiles({...pr, pull_number: pr.number})
     // bodyCheck passes if the author is to be ignored or if the check function passes
-    const bodyCheck =
-      bodyIgnoreAuthors.includes(author) || checkBody(body, bodyRegexInput)
+    const bodyCheck = checkBody(body, bodyRegexInput)
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
       : await checkTitle(title)

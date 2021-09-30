@@ -10,9 +10,11 @@ inputs:
     required: true
     description: 'PR Body Regex'
     default: '(fix|clos|resolv)(es)* #\d+'
-  body-ignore-authors:
+  ignore-authors:
     required: true
-    description: 'Authors to ignore for PR body regex (e.g. dependabot[bot]'
+    description: >
+      PR Authors to ignore (e.g. dependabot). All checks will be skipped and action outputs will be
+      set to true if the PR has one of these authors.
     default: >
       dependabot
       dependabot[bot]
