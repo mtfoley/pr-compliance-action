@@ -66,7 +66,7 @@ async function run(): Promise<void> {
           '\nLinting Errors\n\n' +
           titleErrors.map(error => `\n- ${error.message}`).join('')
         if (titleComment !== '')
-          createComment(pr.number, titleComment + errorsComment)
+          await createComment(pr.number, titleComment + errorsComment)
         core.error(
           `This PR's title should conform to @commitlint/conventional-commit`
         )
@@ -76,7 +76,7 @@ async function run(): Promise<void> {
           '\nFiles Matched\n\n' +
           filesFlagged.map(file => `\n- ${file}`).join('')
         if (watchedFilesComment !== '')
-          createComment(pr.number, watchedFilesComment + filesList)
+          await createComment(pr.number, watchedFilesComment + filesList)
         core.warning(
           `This PR modifies the following files: ${filesFlagged.join(', ')}`
         )
