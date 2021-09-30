@@ -37,7 +37,7 @@ protected-branch | "main" | Branch that check should ensure that PR does not use
 protected-branch-auto-close | true | Whether or not to auto-close on failed check of PR head branch
 protected-branch-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR head branch.
 title-check-enable | true | Whether or not to lint PR title per @commitlint/conventional-commit.
-title-comment | Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit
+title-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit
 watch-files | (Blank) | Files to flag for modifications (e.g. package.json)
 watch-files-comment | (see [action.yml](./action.yml)) | Comment to leave on PR when watched files have been changed.
 
