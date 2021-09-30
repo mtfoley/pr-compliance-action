@@ -10,6 +10,10 @@ Checks:
 import lint from '@commitlint/lint'
 import * as conventionalOpts from '@commitlint/config-conventional'
 
+type LintRuleOutcome = {
+  message: String
+  valid: Boolean
+}
 function checkBody(body: string, regexString: string): Boolean {
   const regex = new RegExp(regexString, 'mi')
   return regex.test(body)
@@ -18,8 +22,14 @@ function checkBody(body: string, regexString: string): Boolean {
 function checkBranch(branch: string, protectedBranch: string): Boolean {
   return branch !== protectedBranch
 }
-async function checkTitle(title: string): Promise<Boolean> {
-  const {valid} = await lint(title, conventionalOpts.rules, conventionalOpts)
-  return valid
+async function checkTitle(
+  title: string
+): Promise<{valid: Boolean; errors: LintRuleOutcome[]}> {
+  const {valid, errors} = await lint(
+    title,
+    conventionalOpts.rules,
+    conventionalOpts
+  )
+  return {valid, errors}
 }
 export {checkBody, checkBranch, checkTitle}

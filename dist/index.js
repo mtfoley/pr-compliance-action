@@ -61,8 +61,8 @@ function checkBranch(branch, protectedBranch) {
 exports.checkBranch = checkBranch;
 function checkTitle(title) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { valid } = yield (0, lint_1.default)(title, conventionalOpts.rules, conventionalOpts);
-        return valid;
+        const { valid, errors } = yield (0, lint_1.default)(title, conventionalOpts.rules, conventionalOpts);
+        return { valid, errors };
     });
 }
 exports.checkTitle = checkTitle;
@@ -131,13 +131,14 @@ function run() {
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = bodyIgnoreAuthors.includes(author) || (0, checks_1.checkBody)(body, bodyRegexInput);
-            const titleCheck = yield (0, checks_1.checkTitle)(title);
+            const { valid: titleCheck } = yield (0, checks_1.checkTitle)(title);
             const branchCheck = (0, checks_1.checkBranch)(branch, protectedBranch);
             const filesFlagged = filesModified
                 .map(file => file.filename)
                 .filter(filename => filesToWatch.includes(filename));
             const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
-            const shouldClosePr = (bodyCheck === false && bodyAutoClose === true) || (branchCheck === false && protectedBranchAutoClose === true);
+            const shouldClosePr = (bodyCheck === false && bodyAutoClose === true) ||
+                (branchCheck === false && protectedBranchAutoClose === true);
             // Set Output values
             core.setOutput('body-check', bodyCheck);
             if (!prCompliant) {

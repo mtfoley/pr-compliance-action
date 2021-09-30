@@ -27,7 +27,7 @@ async function run(): Promise<void> {
     // bodyCheck passes if the author is to be ignored or if the check function passes
     const bodyCheck =
       bodyIgnoreAuthors.includes(author) || checkBody(body, bodyRegexInput)
-    const titleCheck = await checkTitle(title)
+    const {valid: titleCheck} = await checkTitle(title)
     const branchCheck = checkBranch(branch, protectedBranch)
     const filesFlagged = filesModified
       .map(file => file.filename)

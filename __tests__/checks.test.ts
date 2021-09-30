@@ -25,12 +25,16 @@ test('checkTitle false on empty', async () => {
   expect(check).toBeTruthy()
 })
 test('checkTitle true on valid title', async () => {
-  const check = await checkTitle(goodTitle)
-  expect(check).toBeTruthy()
+  const {valid, errors} = await checkTitle(goodTitle)
+  expect(valid).toBeTruthy()
+  expect(errors).toHaveLength(0)
 })
 test('checkTitle false on invalid title', async () => {
-  const check = await checkTitle(badTitle)
-  expect(check).toBeFalsy()
+  const {valid, errors} = await checkTitle(badTitle)
+  expect(valid).toBeFalsy()
+  expect(errors.length).toBeGreaterThan(0)
+  expect(errors[0]).toHaveProperty('message')
+  expect(errors[0]).toHaveProperty('valid')
 })
 test('checkBranch false on protected branch', () => {
   const check = checkBranch('main', 'main')
