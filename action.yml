@@ -1,8 +1,9 @@
 name: 'PR Compliance Action'
 description: >
   Action to check PR compliance on various aspects to improve maintainer QOL.
-icon: git-pull-request
-color: green
+branding:
+  icon: git-pull-request
+  color: green
 author: 'Matthew Foley'
 inputs:
   repo-token:
