@@ -119,6 +119,7 @@ const protectedBranchComment = core.getInput('protected-branch-comment');
 const titleComment = core.getInput('title-comment');
 const titleCheckEnable = core.getBooleanInput('title-check-enable');
 const filesToWatch = core.getMultilineInput('watch-files');
+const watchedFilesComment = core.getInput('watch-files-comment');
 const client = github.getOctokit(repoToken);
 function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
@@ -133,7 +134,9 @@ function run() {
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = bodyIgnoreAuthors.includes(author) || (0, checks_1.checkBody)(body, bodyRegexInput);
-            const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable ? { valid: true, errors: [] } : yield (0, checks_1.checkTitle)(title);
+            const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
+                ? { valid: true, errors: [] }
+                : yield (0, checks_1.checkTitle)(title);
             const branchCheck = (0, checks_1.checkBranch)(branch, protectedBranch);
             const filesFlagged = filesModified
                 .map(file => file.filename)
@@ -145,6 +148,7 @@ function run() {
             core.setOutput('body-check', bodyCheck);
             core.setOutput('branch-check', branchCheck);
             core.setOutput('title-check', titleCheck);
+            core.setOutput('watched-files-check', filesFlagged.length == 0);
             if (!prCompliant) {
                 // Handle failed body check
                 if (!bodyCheck) {
@@ -158,14 +162,19 @@ function run() {
                     core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);
                 }
                 if (!titleCheck) {
-                    const errorsComment = '\nLinting Errors\n\n' + titleErrors.map(error => `\n- ${error.message}`);
+                    const errorsComment = '\nLinting Errors\n\n' +
+                        titleErrors.map(error => `\n- ${error.message}`).join('');
                     if (titleComment !== '')
                         createComment(pr.number, titleComment + errorsComment);
                     core.error(`This PR's title should conform to @commitlint/conventional-commit`);
                 }
-                if (filesFlagged.length > 0)
+                if (filesFlagged.length > 0) {
+                    const filesList = '\nFiles Matched\n\n' + filesFlagged.map(file => `\n- ${file}`).join('');
+                    if (watchedFilesComment !== '')
+                        createComment(pr.number, watchedFilesComment + filesList);
                     core.warning(`This PR modifies the following files: ${filesFlagged.join(', ')}`);
-                // Finally close PR if warranted
+                    // Finally close PR if warranted
+                }
                 if (shouldClosePr)
                     yield closePullRequest(pr.number);
             }

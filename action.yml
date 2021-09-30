@@ -51,21 +51,29 @@ inputs:
     default: true
   title-comment: 
     required: true
-    description: 'Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit'>
-    Thank you for your Pull Request! In order to be considered for merging,
-    the pull request title must match the specification in [@commitlint/conventional-commit]
-    (https://www.conventionalcommits.org/en/v1.0.0/).
+    description: 'Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit'
+    default: >
+      Thank you for your Pull Request! In order to be considered for merging,
+      the pull request title must match the specification in [@commitlint/conventional-commit]
+      (https://www.conventionalcommits.org/en/v1.0.0/).
   watch-files:
     required: true
     description: 'Files to flag modifications'
     default: ''
+  watch-files-comment:
+    required: true
+    description: 'Comment to leave on PR when watched files have been changed.'
+    default: >
+      Thank you for your Pull Request! This pull request modifies specific files that require careful review.
 outputs:
   body-check:
     description: 'Result of match for PR Body against configured regex.'
   branch-check:
     description: 'Result of check to ensure PR head is not protected branch.'
   title-check:
-    description: 'Result of check to ensure PR title is formattd per @commitlint/conventional-commit'
+    description: 'Result of check to ensure PR title is formatted per @commitlint/conventional-commit'
+  watch-files-check:
+    description: 'Result of check for watched files having been modified. True if no modifications found to watched files.'
 runs:
   using: 'node12'
   main: 'dist/index.js'

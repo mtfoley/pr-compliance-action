@@ -16,6 +16,7 @@ const protectedBranchComment = core.getInput('protected-branch-comment')
 const titleComment = core.getInput('title-comment')
 const titleCheckEnable = core.getBooleanInput('title-check-enable')
 const filesToWatch = core.getMultilineInput('watch-files')
+const watchedFilesComment = core.getInput('watch-files-comment')
 const client = github.getOctokit(repoToken)
 async function run(): Promise<void> {
   try {
@@ -45,6 +46,8 @@ async function run(): Promise<void> {
     core.setOutput('body-check', bodyCheck)
     core.setOutput('branch-check', branchCheck)
     core.setOutput('title-check', titleCheck)
+    core.setOutput('watched-files-check', filesFlagged.length == 0)
+
     if (!prCompliant) {
       // Handle failed body check
       if (!bodyCheck) {
@@ -61,18 +64,24 @@ async function run(): Promise<void> {
       if (!titleCheck) {
         const errorsComment =
           '\nLinting Errors\n\n' +
-          titleErrors.map(error => `\n- ${error.message}`)
+          titleErrors.map(error => `\n- ${error.message}`).join('')
         if (titleComment !== '')
           createComment(pr.number, titleComment + errorsComment)
         core.error(
           `This PR's title should conform to @commitlint/conventional-commit`
         )
       }
-      if (filesFlagged.length > 0)
+      if (filesFlagged.length > 0) {
+        const filesList =
+          '\nFiles Matched\n\n' +
+          filesFlagged.map(file => `\n- ${file}`).join('')
+        if (watchedFilesComment !== '')
+          createComment(pr.number, watchedFilesComment + filesList)
         core.warning(
           `This PR modifies the following files: ${filesFlagged.join(', ')}`
         )
-      // Finally close PR if warranted
+        // Finally close PR if warranted
+      }
       if (shouldClosePr) await closePullRequest(pr.number)
     }
   } catch (error) {
