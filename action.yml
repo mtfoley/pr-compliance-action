@@ -81,7 +81,9 @@ inputs:
       Most often, our PR titles are something like one of these:
 
       - docs: correct typo in README
+
       - feat: implement dark mode"
+      
       - fix: correct remove button behavior
   watch-files:
     required: true
