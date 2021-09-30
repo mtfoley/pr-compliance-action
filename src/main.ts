@@ -5,6 +5,7 @@ import {checkBody, checkTitle, checkBranch} from './checks'
 
 const repoToken = core.getInput('repo-token', {required: true})
 const ignoreAuthors = core.getMultilineInput('ignore-authors')
+const baseComment = core.getInput('base-comment')
 const bodyRegexInput = core.getInput('body-regex')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
@@ -65,45 +66,51 @@ async function run(): Promise<void> {
     core.setOutput('branch-check', branchCheck)
     core.setOutput('title-check', titleCheck)
     core.setOutput('watched-files-check', filesFlagged.length == 0)
-
+    let commentsToLeave = []
     if (!prCompliant) {
       // Handle failed body check
       if (!bodyCheck) {
-        if (bodyComment !== '') await createComment(pr.number, bodyComment)
         core.warning('PR Body did not match required format')
+        if (bodyComment !== '') commentsToLeave.push(bodyComment)
       }
       if (!branchCheck) {
-        const branchCommentRegex = new RegExp('%branch%', 'gi')
-        if (protectedBranchComment !== '')
-          await createComment(
-            pr.number,
-            protectedBranchComment.replace(branchCommentRegex, protectedBranch)
-          )
         core.warning(
           `PR has ${protectedBranch} as its head branch, which is discouraged`
         )
+        const branchCommentRegex = new RegExp('%branch%', 'gi')
+        if (protectedBranchComment !== '')
+          commentsToLeave.push(
+            protectedBranchComment.replace(branchCommentRegex, protectedBranch)
+          )
       }
       if (!titleCheck) {
+        core.error(
+          `This PR's title should conform to @commitlint/conventional-commit`
+        )
         const errorsComment =
           '\n\nLinting Errors\n' +
           titleErrors.map(error => `\n- ${error.message}`).join('')
         if (titleComment !== '')
-          await createComment(pr.number, titleComment + errorsComment)
-        core.error(
-          `This PR's title should conform to @commitlint/conventional-commit`
-        )
+          commentsToLeave.push(titleComment + errorsComment)
       }
       if (filesFlagged.length > 0) {
-        const filesList =
-          '\n\nFiles Matched\n' +
-          filesFlagged.map(file => `\n- ${file}`).join('')
-        if (watchedFilesComment !== '')
-          await createComment(pr.number, watchedFilesComment + filesList)
         core.warning(
           `This PR modifies the following files: ${filesFlagged.join(', ')}`
         )
-        // Finally close PR if warranted
+        if (watchedFilesComment !== '') {
+          const filesList =
+            '\n\nFiles Matched\n' +
+            filesFlagged.map(file => `\n- ${file}`).join('')
+          commentsToLeave.push(watchedFilesComment + filesList)
+        }
       }
+      // Finally close PR if warranted
+      if (commentsToLeave.length > 0)
+        await createComment(
+          pr.number,
+          [baseComment, ...commentsToLeave].join('\n\n')
+        )
+      // Finally close PR if warranted
       if (shouldClosePr) await closePullRequest(pr.number)
     }
   } catch (error) {

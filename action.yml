@@ -6,10 +6,6 @@ inputs:
     required: true
     description: 'Repo Access Token'
     default: ''
-  body-regex:
-    required: true
-    description: 'PR Body Regex'
-    default: '(fix|clos|resolv)(es)* #\d+'
   ignore-authors:
     required: true
     description: >
@@ -18,6 +14,20 @@ inputs:
     default: >
       dependabot
       dependabot[bot]
+  base-comment:
+    required: true
+    description: >
+      Preamble portion to have on any comments made by the action. Because multiple checks are run,
+      the action may have multiple sections to any generated comment.
+    default: >
+      # PR Compliance Checks
+      Thank you for your Pull Request! We have run several checks on this pull request in order
+      to make sure it's suitable for merging into this project.  The results are listed in the 
+      following section.
+  body-regex:
+    required: true
+    description: 'PR Body Regex'
+    default: '(fix|clos|resolv)(es)* #\d+'
   body-auto-close:
     required: true
     description: 'Whether or not to auto-close on failed check of PR Body'
@@ -26,10 +36,11 @@ inputs:
     required: true
     description: 'Comment to leave on PR on failed check of PR Body'
     default: >
-      Thank you for your Pull Request! In order to be considered for merging,
-      the pull request description must refer to a specific issue number. This
-      is described in our Contributing Guide. We are closing this issue for now
-      but you can update the pull request description and reopen it.
+      ## Issue Reference
+      In order to be considered for merging, the pull request description must refer to a 
+      specific issue number. This is described in our Contributing Guide. We are closing this 
+      pull request for now but you can update the pull request description and reopen the pull 
+      request.
   protected-branch:
     required: true
     description: 'Protected Branch'
@@ -42,11 +53,11 @@ inputs:
     required: true
     description: 'Comment to leave on PR on failed check of PR head branch.'
     default: >
-      Thank you for your Pull Request! In order to be considered for merging,
-      the pull request description must not be from the "%branch%" branch. This
-      is described in our Contributing Guide. We are closing this pull request
-      and we would suggest that you implement your changes as described in our
-      documents and open a new pull request.
+      ## Protected Branch
+      In order to be considered for merging, the pull request description must 
+      not be from the "%branch%" branch. This is described in our Contributing Guide. 
+      We are closing this pull request and we would suggest that you implement your changes as 
+      described in our Contributing Guide and open a new pull request.
   title-check-enable:
     required: true
     description: 'Whether or not to lint PR title per @commitlint/conventional-commit.'
@@ -55,9 +66,10 @@ inputs:
     required: true
     description: 'Comment to leave on PR on failed check of PR title per @commitlint/conventional-commit'
     default: >
-      Thank you for your Pull Request! In order to be considered for merging,
-      the pull request title must match the specification in 
-      [@commitlint/conventional-commit](https://www.conventionalcommits.org/en/v1.0.0/).
+      ## Conventional Commit PR Title
+      In order to be considered for merging, the pull request title must match the specification in 
+      [@commitlint/conventional-commit](https://www.conventionalcommits.org/en/v1.0.0/). You can edit
+      the title in order for this check to pass.
   watch-files:
     required: true
     description: 'Files to flag modifications'
@@ -66,7 +78,8 @@ inputs:
     required: true
     description: 'Comment to leave on PR when watched files have been changed.'
     default: >
-      Thank you for your Pull Request! This pull request modifies specific files that require careful review.
+      ## Watched Files
+      This pull request modifies specific files that require careful review by the maintainers.
 outputs:
   body-check:
     description: 'Result of match for PR Body against configured regex.'

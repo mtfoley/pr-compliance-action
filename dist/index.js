@@ -110,6 +110,7 @@ const utils_1 = __nccwpck_require__(3030);
 const checks_1 = __nccwpck_require__(2321);
 const repoToken = core.getInput('repo-token', { required: true });
 const ignoreAuthors = core.getMultilineInput('ignore-authors');
+const baseComment = core.getInput('base-comment');
 const bodyRegexInput = core.getInput('body-regex');
 const bodyAutoClose = core.getBooleanInput('body-auto-close');
 const bodyComment = core.getInput('body-comment');
@@ -166,34 +167,39 @@ function run() {
             core.setOutput('branch-check', branchCheck);
             core.setOutput('title-check', titleCheck);
             core.setOutput('watched-files-check', filesFlagged.length == 0);
+            let commentsToLeave = [];
             if (!prCompliant) {
                 // Handle failed body check
                 if (!bodyCheck) {
-                    if (bodyComment !== '')
-                        yield createComment(pr.number, bodyComment);
                     core.warning('PR Body did not match required format');
+                    if (bodyComment !== '')
+                        commentsToLeave.push(bodyComment);
                 }
                 if (!branchCheck) {
+                    core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);
                     const branchCommentRegex = new RegExp('%branch%', 'gi');
                     if (protectedBranchComment !== '')
-                        yield createComment(pr.number, protectedBranchComment.replace(branchCommentRegex, protectedBranch));
-                    core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);
+                        commentsToLeave.push(protectedBranchComment.replace(branchCommentRegex, protectedBranch));
                 }
                 if (!titleCheck) {
+                    core.error(`This PR's title should conform to @commitlint/conventional-commit`);
                     const errorsComment = '\n\nLinting Errors\n' +
                         titleErrors.map(error => `\n- ${error.message}`).join('');
                     if (titleComment !== '')
-                        yield createComment(pr.number, titleComment + errorsComment);
-                    core.error(`This PR's title should conform to @commitlint/conventional-commit`);
+                        commentsToLeave.push(titleComment + errorsComment);
                 }
                 if (filesFlagged.length > 0) {
-                    const filesList = '\n\nFiles Matched\n' +
-                        filesFlagged.map(file => `\n- ${file}`).join('');
-                    if (watchedFilesComment !== '')
-                        yield createComment(pr.number, watchedFilesComment + filesList);
                     core.warning(`This PR modifies the following files: ${filesFlagged.join(', ')}`);
-                    // Finally close PR if warranted
+                    if (watchedFilesComment !== '') {
+                        const filesList = '\n\nFiles Matched\n' +
+                            filesFlagged.map(file => `\n- ${file}`).join('');
+                        commentsToLeave.push(watchedFilesComment + filesList);
+                    }
                 }
+                // Finally close PR if warranted
+                if (commentsToLeave.length > 0)
+                    yield createComment(pr.number, [baseComment, ...commentsToLeave].join('\n\n'));
+                // Finally close PR if warranted
                 if (shouldClosePr)
                     yield closePullRequest(pr.number);
             }
