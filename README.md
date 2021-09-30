@@ -30,7 +30,7 @@ Name | Default | Description
 repo-token | (Blank) | Access token for which this action will run. This action uses `@actions/core` library.
 ignore-authors | dependabot<br/>dependabot[bot] | If the action detects that the PR author is one of these logins, it will skip checks and set all outputs to `true`.
 base-comment | (see [action.yml](./action.yml)) | Preamble to any comment the action leaves on the PR.
-body-regex | (fix|resolv|close)(es)* #\d+ | Regular expression to identify whether the PR body refers to an issue.
+body-regex | `(fix\|resolv\|close)(es)* #\d+` | Regular expression to identify whether the PR body refers to an issue.
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
 protected-branch | "main" | Branch that check should ensure that PR does not use as it's head.
