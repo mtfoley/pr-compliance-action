@@ -157,8 +157,9 @@ function run() {
                     core.warning('PR Body did not match required format');
                 }
                 if (!branchCheck) {
+                    const branchCommentRegex = new RegExp("%branch%", "gi");
                     if (protectedBranchComment !== '')
-                        yield createComment(pr.number, protectedBranchComment);
+                        yield createComment(pr.number, protectedBranchComment.replace(branchCommentRegex, protectedBranch));
                     core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);
                 }
                 if (!titleCheck) {

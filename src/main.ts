@@ -55,8 +55,12 @@ async function run(): Promise<void> {
         core.warning('PR Body did not match required format')
       }
       if (!branchCheck) {
+        const branchCommentRegex = new RegExp('%branch%', 'gi')
         if (protectedBranchComment !== '')
-          await createComment(pr.number, protectedBranchComment)
+          await createComment(
+            pr.number,
+            protectedBranchComment.replace(branchCommentRegex, protectedBranch)
+          )
         core.warning(
           `PR has ${protectedBranch} as its head branch, which is discouraged`
         )
