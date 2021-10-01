@@ -10,6 +10,30 @@ It looks for the following:
 - [x] PR originates from a protected branch e.g. "main", (based on head ref)
 - [x] PR includes modifications to specific files that should be reviewed carefully (e.g. package.json)
 
+## Sample Workflow File
+
+Below is a sample yaml file to place in `.github/workflows/`:
+
+```yml
+name: PR Compliance
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+jobs:
+  pr-compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: mtfoley/pr-compliance-action@main
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          protected-branch: 'master'
+          watch-files: >
+            package.json
+            npm-shrinkwrap.json
+```
+
 ## Behavior
 
 This action drives the following outcomes:
