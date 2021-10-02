@@ -130,20 +130,12 @@ function run() {
             const pr = ctx.issue;
             const isDraft = ((_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.draft) !== null && _b !== void 0 ? _b : false) === true;
             if (isDraft) {
-                core.info('PR is a draft, skipping checks, setting all outputs to false.');
-                core.setOutput('body-check', false);
-                core.setOutput('branch-check', false);
-                core.setOutput('title-check', false);
-                core.setOutput('watched-files-check', false);
+                escapeChecks(false, 'PR is a draft, skipping checks, setting all outputs to false.');
                 return;
             }
             const author = (_e = (_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.login) !== null && _e !== void 0 ? _e : '';
             if (ignoreAuthors.includes(author)) {
-                core.info('PR is by ignored author, skipping checks, setting all outputs to true.');
-                core.setOutput('body-check', true);
-                core.setOutput('branch-check', true);
-                core.setOutput('title-check', true);
-                core.setOutput('watched-files-check', true);
+                escapeChecks(true, 'PR is by ignored author, skipping checks, setting all outputs to true.');
                 return;
             }
             const body = (_g = (_f = ctx.payload.pull_request) === null || _f === void 0 ? void 0 : _f.body) !== null && _g !== void 0 ? _g : '';
@@ -219,6 +211,15 @@ function createComment(number, comment) {
 function closePullRequest(number) {
     return __awaiter(this, void 0, void 0, function* () {
         yield client.rest.pulls.update(Object.assign(Object.assign({}, utils_1.context.repo), { pull_number: number, state: 'closed' }));
+    });
+}
+function escapeChecks(checkResult, message) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.info(message);
+        core.setOutput('body-check', checkResult);
+        core.setOutput('branch-check', checkResult);
+        core.setOutput('title-check', checkResult);
+        core.setOutput('watched-files-check', checkResult);
     });
 }
 function listFiles(pullRequest) {

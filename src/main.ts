@@ -25,22 +25,18 @@ async function run(): Promise<void> {
     const pr = ctx.issue
     const isDraft = (ctx.payload.pull_request?.draft ?? false) === true
     if (isDraft) {
-      core.info('PR is a draft, skipping checks, setting all outputs to false.')
-      core.setOutput('body-check', false)
-      core.setOutput('branch-check', false)
-      core.setOutput('title-check', false)
-      core.setOutput('watched-files-check', false)
+      escapeChecks(
+        false,
+        'PR is a draft, skipping checks, setting all outputs to false.'
+      )
       return
     }
     const author = ctx.payload.pull_request?.user?.login ?? ''
     if (ignoreAuthors.includes(author)) {
-      core.info(
+      escapeChecks(
+        true,
         'PR is by ignored author, skipping checks, setting all outputs to true.'
       )
-      core.setOutput('body-check', true)
-      core.setOutput('branch-check', true)
-      core.setOutput('title-check', true)
-      core.setOutput('watched-files-check', true)
       return
     }
     const body = ctx.payload.pull_request?.body ?? ''
@@ -131,6 +127,13 @@ async function closePullRequest(number: number) {
     pull_number: number,
     state: 'closed'
   })
+}
+async function escapeChecks(checkResult: boolean, message: string) {
+  core.info(message)
+  core.setOutput('body-check', checkResult)
+  core.setOutput('branch-check', checkResult)
+  core.setOutput('title-check', checkResult)
+  core.setOutput('watched-files-check', checkResult)
 }
 async function listFiles(pullRequest: {
   owner: string
