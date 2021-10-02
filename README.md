@@ -65,7 +65,7 @@ title-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on fai
 watch-files | (Blank) | Files to flag for modifications (e.g. package.json)
 watch-files-comment | (see [action.yml](./action.yml)) | Comment to leave on PR when watched files have been changed.
 
-[^1]: Default regular expression is based on linking to an issue using a keyword. To keep PRs related to issues within the same same repo, we use the `KEYWORD #ISSUE-NUMBER` syntax. However, one could also use a regular expression like `(fix\|resolv\|clos)(e)*(s|d)* (my-org)\/([a-z0-9\-_]*)#\d+`
+[^1]: Default regular expression is based on [linking to an issue using a keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword). To keep PRs related to issues within the same same repo, we use the `KEYWORD #ISSUE-NUMBER` syntax. However, one could also use a regular expression like `(fix\|resolv\|clos)(e)*(s|d)* (my-org)\/([a-z0-9\-_]*)#\d+`
 
 ## Outputs
 
