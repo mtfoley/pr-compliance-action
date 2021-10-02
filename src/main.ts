@@ -24,6 +24,15 @@ async function run(): Promise<void> {
     const ctx = github.context
     const pr = ctx.issue
     const isDraft = (ctx.payload.pull_request?.draft ?? false) === true
+    const isClosed =
+      (ctx.payload.pull_request?.state ?? 'open').toLowerCase() === 'closed'
+    if (isClosed) {
+      escapeChecks(
+        false,
+        'PR is closed, skipping checks, setting all outputs to false.'
+      )
+      return
+    }
     if (isDraft) {
       escapeChecks(
         false,

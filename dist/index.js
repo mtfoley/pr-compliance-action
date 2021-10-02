@@ -123,24 +123,29 @@ const filesToWatch = core.getMultilineInput('watch-files');
 const watchedFilesComment = core.getInput('watch-files-comment');
 const client = github.getOctokit(repoToken);
 function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const ctx = github.context;
             const pr = ctx.issue;
             const isDraft = ((_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.draft) !== null && _b !== void 0 ? _b : false) === true;
+            const isClosed = ((_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.state) !== null && _d !== void 0 ? _d : 'open').toLowerCase() === 'closed';
+            if (isClosed) {
+                escapeChecks(false, 'PR is closed, skipping checks, setting all outputs to false.');
+                return;
+            }
             if (isDraft) {
                 escapeChecks(false, 'PR is a draft, skipping checks, setting all outputs to false.');
                 return;
             }
-            const author = (_e = (_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.login) !== null && _e !== void 0 ? _e : '';
+            const author = (_g = (_f = (_e = ctx.payload.pull_request) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.login) !== null && _g !== void 0 ? _g : '';
             if (ignoreAuthors.includes(author)) {
                 escapeChecks(true, 'PR is by ignored author, skipping checks, setting all outputs to true.');
                 return;
             }
-            const body = (_g = (_f = ctx.payload.pull_request) === null || _f === void 0 ? void 0 : _f.body) !== null && _g !== void 0 ? _g : '';
-            const title = (_j = (_h = ctx.payload.pull_request) === null || _h === void 0 ? void 0 : _h.title) !== null && _j !== void 0 ? _j : '';
-            const branch = (_m = (_l = (_k = ctx.payload.pull_request) === null || _k === void 0 ? void 0 : _k.head) === null || _l === void 0 ? void 0 : _l.ref) !== null && _m !== void 0 ? _m : '';
+            const body = (_j = (_h = ctx.payload.pull_request) === null || _h === void 0 ? void 0 : _h.body) !== null && _j !== void 0 ? _j : '';
+            const title = (_l = (_k = ctx.payload.pull_request) === null || _k === void 0 ? void 0 : _k.title) !== null && _l !== void 0 ? _l : '';
+            const branch = (_p = (_o = (_m = ctx.payload.pull_request) === null || _m === void 0 ? void 0 : _m.head) === null || _o === void 0 ? void 0 : _o.ref) !== null && _p !== void 0 ? _p : '';
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
