@@ -54,7 +54,7 @@ Name | Default | Description
 repo-token | (Blank) | Access token for which this action will run. This action uses `@actions/core` library.
 ignore-authors | dependabot<br/>dependabot[bot] | If the action detects that the PR author is one of these logins, it will skip checks and set all outputs to `true`.
 base-comment | (see [action.yml](./action.yml)) | Preamble to any comment the action leaves on the PR.
-body-regex | `(fix\|resolv\|clos)(e)*(s|d)* #\d+` | Regular expression to identify whether the PR body refers to an issue.[^1]
+body-regex | `(fix\|resolv\|clos)(e)*(s\|d)* #\d+` | Regular expression to identify whether the PR body refers to an issue[^1].
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
 protected-branch | "main" | Branch that check should ensure that PR does not use as it's head.
@@ -65,7 +65,7 @@ title-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on fai
 watch-files | (Blank) | Files to flag for modifications (e.g. package.json)
 watch-files-comment | (see [action.yml](./action.yml)) | Comment to leave on PR when watched files have been changed.
 
-[^1] Default regular expression is based on linking to an issue using a keyword. To keep PRs related to issues within the same same repo, we use the `KEYWORD #ISSUE-NUMBER` syntax. However, one could also use a regular expression like `(fix\|resolv\|clos)(e)*(s|d)* (my-org)\/([a-z0-9\-_]*)#\d+`
+[^1]: Default regular expression is based on linking to an issue using a keyword. To keep PRs related to issues within the same same repo, we use the `KEYWORD #ISSUE-NUMBER` syntax. However, one could also use a regular expression like `(fix\|resolv\|clos)(e)*(s|d)* (my-org)\/([a-z0-9\-_]*)#\d+`
 
 ## Outputs
 
