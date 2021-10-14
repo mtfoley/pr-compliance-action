@@ -237,7 +237,11 @@ function listFiles(pullRequest) {
 }
 function userIsTeamMember(login, org) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data: userOrgs } = yield client.request('GET /users/{user}/orgs', { user: login });
+        const { data: userOrgs } = yield client.request('GET /users/{user}/orgs', {
+            user: login
+        });
+        console.log(userOrgs);
+        core.info(JSON.stringify(userOrgs));
         return userOrgs.some((userOrg) => {
             return userOrg.login === org;
         });
