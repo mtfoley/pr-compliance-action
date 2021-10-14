@@ -29,7 +29,7 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           protected-branch: 'master'
-          watch-files: >
+          watch-files: |
             package.json
             npm-shrinkwrap.json
 ```
