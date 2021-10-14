@@ -5,6 +5,7 @@ import {checkBody, checkTitle, checkBranch} from './checks'
 
 const repoToken = core.getInput('repo-token', {required: true})
 const ignoreAuthors = core.getMultilineInput('ignore-authors')
+const ignoreTeamMembers = core.getBooleanInput('ignore-team-members')
 const baseComment = core.getInput('base-comment')
 const bodyRegexInput = core.getInput('body-regex')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
@@ -24,7 +25,7 @@ async function run(): Promise<void> {
     const ctx = github.context
     const pr = ctx.issue
     const isDraft = (ctx.payload.pull_request?.draft ?? false) === true
-    const repoOrg = context.repo.owner
+    const repoOwner = context.repo.owner
     const isClosed =
       (ctx.payload.pull_request?.state ?? 'open').toLowerCase() === 'closed'
     if (isClosed) {
@@ -42,11 +43,18 @@ async function run(): Promise<void> {
       return
     }
     const author = ctx.payload.pull_request?.user?.login ?? ''
-    const isTeamMember = await userIsTeamMember(author, repoOrg)
-    if (ignoreAuthors.includes(author) || isTeamMember) {
+    if (ignoreAuthors.includes(author)) {
       escapeChecks(
         true,
         'PR is by ignored author, skipping checks, setting all outputs to true.'
+      )
+      return
+    }
+    const isTeamMember = await userIsTeamMember(author, repoOwner)
+    if (ignoreTeamMembers && isTeamMember) {
+      escapeChecks(
+        true,
+        'PR is by team member, skipping checks, setting all outputs to true.'
       )
       return
     }
@@ -154,14 +162,13 @@ async function listFiles(pullRequest: {
   const {data: files} = await client.rest.pulls.listFiles(pullRequest)
   return files
 }
-async function userIsTeamMember(login: string, org: string) {
+async function userIsTeamMember(login: string, owner: string) {
+  if (login === owner) return true
   const {data: userOrgs} = await client.request('GET /users/{user}/orgs', {
     user: login
   })
-  console.log(userOrgs)
-  core.info(JSON.stringify(userOrgs))
   return userOrgs.some((userOrg: {login: string}) => {
-    return userOrg.login === org
+    return userOrg.login === owner
   })
 }
 run()
