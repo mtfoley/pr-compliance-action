@@ -158,6 +158,8 @@ async function userIsTeamMember(login: string, org: string) {
   const {data: userOrgs} = await client.request('GET /users/{user}/orgs', {
     user: login
   })
+  console.log(userOrgs)
+  core.info(JSON.stringify(userOrgs))
   return userOrgs.some((userOrg: {login: string}) => {
     return userOrg.login === org
   })
