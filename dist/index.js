@@ -129,6 +129,7 @@ function run() {
             const ctx = github.context;
             const pr = ctx.issue;
             const isDraft = ((_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.draft) !== null && _b !== void 0 ? _b : false) === true;
+            const repoOrg = utils_1.context.repo.owner;
             const isClosed = ((_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.state) !== null && _d !== void 0 ? _d : 'open').toLowerCase() === 'closed';
             if (isClosed) {
                 escapeChecks(false, 'PR is closed, skipping checks, setting all outputs to false.');
@@ -139,7 +140,8 @@ function run() {
                 return;
             }
             const author = (_g = (_f = (_e = ctx.payload.pull_request) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.login) !== null && _g !== void 0 ? _g : '';
-            if (ignoreAuthors.includes(author)) {
+            const isTeamMember = yield userIsTeamMember(author, repoOrg);
+            if (ignoreAuthors.includes(author) || isTeamMember) {
                 escapeChecks(true, 'PR is by ignored author, skipping checks, setting all outputs to true.');
                 return;
             }
@@ -231,6 +233,14 @@ function listFiles(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
         const { data: files } = yield client.rest.pulls.listFiles(pullRequest);
         return files;
+    });
+}
+function userIsTeamMember(login, org) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { data: userOrgs } = yield client.request('GET /users/{user}/orgs', { user: login });
+        return userOrgs.some((userOrg) => {
+            return userOrg.login === org;
+        });
     });
 }
 run();

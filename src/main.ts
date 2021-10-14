@@ -24,6 +24,7 @@ async function run(): Promise<void> {
     const ctx = github.context
     const pr = ctx.issue
     const isDraft = (ctx.payload.pull_request?.draft ?? false) === true
+    const repoOrg = context.repo.owner
     const isClosed =
       (ctx.payload.pull_request?.state ?? 'open').toLowerCase() === 'closed'
     if (isClosed) {
@@ -41,7 +42,8 @@ async function run(): Promise<void> {
       return
     }
     const author = ctx.payload.pull_request?.user?.login ?? ''
-    if (ignoreAuthors.includes(author)) {
+    const isTeamMember = await userIsTeamMember(author, repoOrg)
+    if (ignoreAuthors.includes(author) || isTeamMember) {
       escapeChecks(
         true,
         'PR is by ignored author, skipping checks, setting all outputs to true.'
@@ -151,5 +153,13 @@ async function listFiles(pullRequest: {
 }) {
   const {data: files} = await client.rest.pulls.listFiles(pullRequest)
   return files
+}
+async function userIsTeamMember(login: string, org: string) {
+  const {data: userOrgs} = await client.request('GET /users/{user}/orgs', {
+    user: login
+  })
+  return userOrgs.some((userOrg: {login: string}) => {
+    return userOrg.login === org
+  })
 }
 run()
