@@ -110,6 +110,7 @@ const utils_1 = __nccwpck_require__(3030);
 const checks_1 = __nccwpck_require__(2321);
 const repoToken = core.getInput('repo-token', { required: true });
 const ignoreAuthors = core.getMultilineInput('ignore-authors');
+const ignoreTeamMembers = core.getBooleanInput('ignore-team-members');
 const baseComment = core.getInput('base-comment');
 const bodyRegexInput = core.getInput('body-regex');
 const bodyAutoClose = core.getBooleanInput('body-auto-close');
@@ -129,6 +130,7 @@ function run() {
             const ctx = github.context;
             const pr = ctx.issue;
             const isDraft = ((_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.draft) !== null && _b !== void 0 ? _b : false) === true;
+            const repoOwner = utils_1.context.repo.owner;
             const isClosed = ((_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.state) !== null && _d !== void 0 ? _d : 'open').toLowerCase() === 'closed';
             if (isClosed) {
                 escapeChecks(false, 'PR is closed, skipping checks, setting all outputs to false.');
@@ -141,6 +143,11 @@ function run() {
             const author = (_g = (_f = (_e = ctx.payload.pull_request) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.login) !== null && _g !== void 0 ? _g : '';
             if (ignoreAuthors.includes(author)) {
                 escapeChecks(true, 'PR is by ignored author, skipping checks, setting all outputs to true.');
+                return;
+            }
+            const isTeamMember = yield userIsTeamMember(author, repoOwner);
+            if (ignoreTeamMembers && isTeamMember) {
+                escapeChecks(true, 'PR is by team member, skipping checks, setting all outputs to true.');
                 return;
             }
             const body = (_j = (_h = ctx.payload.pull_request) === null || _h === void 0 ? void 0 : _h.body) !== null && _j !== void 0 ? _j : '';
@@ -231,6 +238,18 @@ function listFiles(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
         const { data: files } = yield client.rest.pulls.listFiles(pullRequest);
         return files;
+    });
+}
+function userIsTeamMember(login, owner) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (login === owner)
+            return true;
+        const { data: userOrgs } = yield client.request('GET /users/{user}/orgs', {
+            user: login
+        });
+        return userOrgs.some((userOrg) => {
+            return userOrg.login === owner;
+        });
     });
 }
 run();

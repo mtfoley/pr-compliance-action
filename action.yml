@@ -18,6 +18,13 @@ inputs:
     default: |
       dependabot
       dependabot[bot]
+  ignore-team-members:
+    required: true
+    description: >
+      Whether to ignore in the case that the PR author is a) the owner of repository, or b) has a
+      public membership in the org that owns the repository. If set to true and either of these
+      cases are satisfied, all checks will be skipped and action outputs will be set to true.
+    default: true
   base-comment:
     required: true
     description: >
