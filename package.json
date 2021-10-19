@@ -32,7 +32,7 @@
   "devDependencies": {
     "@commitlint/config-conventional": "^13.2.0",
     "@commitlint/lint": "^13.2.0",
-    "@types/node": "^16.10.3",
+    "@types/node": "^16.11.1",
     "@typescript-eslint/parser": "^5.1.0",
     "@vercel/ncc": "^0.31.1",
     "eslint": "^7.32.0",
