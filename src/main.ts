@@ -99,7 +99,7 @@ async function run(): Promise<void> {
           )
       }
       if (!titleCheck) {
-        core.error(
+        core.setFailed(
           `This PR's title should conform to @commitlint/conventional-commit`
         )
         const errorsComment =

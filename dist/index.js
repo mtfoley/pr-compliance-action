@@ -186,7 +186,7 @@ function run() {
                         commentsToLeave.push(protectedBranchComment.replace(branchCommentRegex, protectedBranch));
                 }
                 if (!titleCheck) {
-                    core.error(`This PR's title should conform to @commitlint/conventional-commit`);
+                    core.setFailed(`This PR's title should conform to @commitlint/conventional-commit`);
                     const errorsComment = '\n\nLinting Errors\n' +
                         titleErrors.map(error => `\n- ${error.message}`).join('');
                     if (titleComment !== '')
