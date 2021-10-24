@@ -1,12 +1,3 @@
-/*
-
-Checks:
-- PR Title vs @commitlint/conventional-commit
-- Body vs regex "fixes #123" or "closes #123" or "resolves #123"
-- Check originating branch
-- Check whether certain files change
-
-*/
 import conventionalConfig from 'conventional-changelog-conventionalcommits'
 import * as conventionalTypes from 'conventional-commit-types'
 import {sync} from 'conventional-commits-parser'

@@ -39,15 +39,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.checkTitle = exports.checkBranch = exports.checkBody = void 0;
-/*
-
-Checks:
-- PR Title vs @commitlint/conventional-commit
-- Body vs regex "fixes #123" or "closes #123" or "resolves #123"
-- Check originating branch
-- Check whether certain files change
-
-*/
 const conventional_changelog_conventionalcommits_1 = __importDefault(__nccwpck_require__(5844));
 const conventionalTypes = __importStar(__nccwpck_require__(614));
 const conventional_commits_parser_1 = __nccwpck_require__(1655);
