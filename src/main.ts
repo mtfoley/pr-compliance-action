@@ -100,7 +100,7 @@ async function run(): Promise<void> {
       }
       if (!titleCheck) {
         core.setFailed(
-          `This PR's title should conform to @commitlint/conventional-commit`
+          `This PR's title should conform to specification at https://conventionalcommits.org`
         )
         const errorsComment =
           '\n\nLinting Errors\n' +

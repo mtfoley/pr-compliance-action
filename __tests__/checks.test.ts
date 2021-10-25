@@ -21,8 +21,11 @@ test('checkBody true on valid message with multiline', () => {
   expect(check).toBeTruthy()
 })
 test('checkTitle false on empty', async () => {
-  const check = await checkTitle('')
-  expect(check).toBeTruthy()
+  const {valid, errors} = await checkTitle('')
+  expect(valid).toBeFalsy()
+  expect(errors.length).toBeGreaterThan(0)
+  expect(errors[0]).toHaveProperty('message')
+  expect(errors[0]).toHaveProperty('valid')
 })
 test('checkTitle true on valid title', async () => {
   const {valid, errors} = await checkTitle(goodTitle)
