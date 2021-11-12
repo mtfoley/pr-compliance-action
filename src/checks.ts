@@ -6,14 +6,17 @@ type LintRuleOutcome = {
   message: String
   valid: Boolean
 }
+
 function checkBody(body: string, regexString: string): Boolean {
   const regex = new RegExp(regexString, 'mi')
-  return regex.test(body)
+  const bodyNoComments = body.replace(/<!--(.*?)-->/gms, '')
+  return regex.test(bodyNoComments)
 }
 
 function checkBranch(branch: string, protectedBranch: string): Boolean {
   return branch !== protectedBranch
 }
+
 async function checkTitle(
   title: string
 ): Promise<{valid: Boolean; errors: LintRuleOutcome[]}> {
@@ -44,4 +47,5 @@ async function checkTitle(
     }
   }
 }
+
 export {checkBody, checkBranch, checkTitle}

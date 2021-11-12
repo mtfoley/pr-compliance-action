@@ -44,7 +44,8 @@ const conventionalTypes = __importStar(__nccwpck_require__(614));
 const conventional_commits_parser_1 = __nccwpck_require__(1655);
 function checkBody(body, regexString) {
     const regex = new RegExp(regexString, 'mi');
-    return regex.test(body);
+    const bodyNoComments = body.replace(/<!--(.*?)-->/gms, '');
+    return regex.test(bodyNoComments);
 }
 exports.checkBody = checkBody;
 function checkBranch(branch, protectedBranch) {
