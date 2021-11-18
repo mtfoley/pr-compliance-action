@@ -10,7 +10,7 @@ const baseComment = core.getInput('base-comment')
 const bodyRegexInput = core.getInput('body-regex')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
-const protectedBranch = core.getInput('protected-branch')
+let protectedBranch = core.getInput('protected-branch')
 const protectedBranchAutoClose = core.getBooleanInput(
   'protected-branch-auto-close'
 )
@@ -26,7 +26,7 @@ async function run(): Promise<void> {
     const pr = ctx.issue
     const isDraft = (ctx.payload.pull_request?.draft ?? false) === true
     const repoOwner = context.repo.owner
-    if(protectedBranch === '') protectedBranch = ctx.payload.repository.default_branch;
+    if(protectedBranch === '') protectedBranch = ctx.payload.repository?.default_branch ?? '';
     const isClosed =
       (ctx.payload.pull_request?.state ?? 'open').toLowerCase() === 'closed'
     if (isClosed) {
