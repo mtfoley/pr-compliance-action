@@ -21,6 +21,10 @@ on:
   pull_request:
     types: [opened, edited, reopened]
 
+# Action should have write permission to make updates to PR
+permissions:
+  pull-requests: write
+
 jobs:
   pr-compliance:
     runs-on: ubuntu-latest
