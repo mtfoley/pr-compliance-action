@@ -131,7 +131,7 @@ const baseComment = core.getInput('base-comment');
 const bodyRegexInput = core.getInput('body-regex');
 const bodyAutoClose = core.getBooleanInput('body-auto-close');
 const bodyComment = core.getInput('body-comment');
-const protectedBranch = core.getInput('protected-branch');
+let protectedBranch = core.getInput('protected-branch');
 const protectedBranchAutoClose = core.getBooleanInput('protected-branch-auto-close');
 const protectedBranchComment = core.getInput('protected-branch-comment');
 const titleComment = core.getInput('title-comment');
@@ -140,14 +140,16 @@ const filesToWatch = core.getMultilineInput('watch-files');
 const watchedFilesComment = core.getInput('watch-files-comment');
 const client = github.getOctokit(repoToken);
 function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const ctx = github.context;
             const pr = ctx.issue;
             const isDraft = ((_b = (_a = ctx.payload.pull_request) === null || _a === void 0 ? void 0 : _a.draft) !== null && _b !== void 0 ? _b : false) === true;
             const repoOwner = utils_1.context.repo.owner;
-            const isClosed = ((_d = (_c = ctx.payload.pull_request) === null || _c === void 0 ? void 0 : _c.state) !== null && _d !== void 0 ? _d : 'open').toLowerCase() === 'closed';
+            if (protectedBranch === '')
+                protectedBranch = (_d = (_c = ctx.payload.repository) === null || _c === void 0 ? void 0 : _c.default_branch) !== null && _d !== void 0 ? _d : '';
+            const isClosed = ((_f = (_e = ctx.payload.pull_request) === null || _e === void 0 ? void 0 : _e.state) !== null && _f !== void 0 ? _f : 'open').toLowerCase() === 'closed';
             if (isClosed) {
                 escapeChecks(false, 'PR is closed, skipping checks, setting all outputs to false.');
                 return;
@@ -156,7 +158,7 @@ function run() {
                 escapeChecks(false, 'PR is a draft, skipping checks, setting all outputs to false.');
                 return;
             }
-            const author = (_g = (_f = (_e = ctx.payload.pull_request) === null || _e === void 0 ? void 0 : _e.user) === null || _f === void 0 ? void 0 : _f.login) !== null && _g !== void 0 ? _g : '';
+            const author = (_j = (_h = (_g = ctx.payload.pull_request) === null || _g === void 0 ? void 0 : _g.user) === null || _h === void 0 ? void 0 : _h.login) !== null && _j !== void 0 ? _j : '';
             if (ignoreAuthors.includes(author)) {
                 escapeChecks(true, 'PR is by ignored author, skipping checks, setting all outputs to true.');
                 return;
@@ -166,9 +168,9 @@ function run() {
                 escapeChecks(true, 'PR is by team member, skipping checks, setting all outputs to true.');
                 return;
             }
-            const body = (_j = (_h = ctx.payload.pull_request) === null || _h === void 0 ? void 0 : _h.body) !== null && _j !== void 0 ? _j : '';
-            const title = (_l = (_k = ctx.payload.pull_request) === null || _k === void 0 ? void 0 : _k.title) !== null && _l !== void 0 ? _l : '';
-            const branch = (_p = (_o = (_m = ctx.payload.pull_request) === null || _m === void 0 ? void 0 : _m.head) === null || _o === void 0 ? void 0 : _o.ref) !== null && _p !== void 0 ? _p : '';
+            const body = (_l = (_k = ctx.payload.pull_request) === null || _k === void 0 ? void 0 : _k.body) !== null && _l !== void 0 ? _l : '';
+            const title = (_o = (_m = ctx.payload.pull_request) === null || _m === void 0 ? void 0 : _m.title) !== null && _o !== void 0 ? _o : '';
+            const branch = (_r = (_q = (_p = ctx.payload.pull_request) === null || _p === void 0 ? void 0 : _p.head) === null || _q === void 0 ? void 0 : _q.ref) !== null && _r !== void 0 ? _r : '';
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
