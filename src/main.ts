@@ -3,7 +3,7 @@ import * as github from '@actions/github'
 import {context} from '@actions/github/lib/utils'
 import {checkBody, checkTitle, checkBranch} from './checks'
 
-const repoToken = core.getInput('repo-token', {required: true})
+const repoToken = core.getInput('repo-token')
 const ignoreAuthors = core.getMultilineInput('ignore-authors')
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members')
 const baseComment = core.getInput('base-comment')
