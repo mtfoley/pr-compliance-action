@@ -31,7 +31,6 @@ jobs:
     steps:
       - uses: mtfoley/pr-compliance-action@main
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
           protected-branch: 'master'
           watch-files: |
             package.json
@@ -55,7 +54,7 @@ All inputs are required and all have default values. The only input absolutely r
 
 Name | Default | Description
 --- | --- | ---
-repo-token | (Blank) | Access token for which this action will run. This action uses `@actions/core` library.
+repo-token | `secrets.GITHUB_TOKEN` | Access token for which this action will run. This action uses `@actions/core` library.
 ignore-authors | dependabot<br/>dependabot[bot] | If the action detects that the PR author is one of these logins, it will skip checks and set all outputs to `true`.
 base-comment | (see [action.yml](./action.yml)) | Preamble to any comment the action leaves on the PR.
 ignore-team-members | true | Whether to ignore in the case that the PR author is a) the owner of repository, or b) has a public membership[^1] in the org that owns the repository.
