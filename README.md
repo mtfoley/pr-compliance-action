@@ -50,7 +50,7 @@ PR Avoids Watched Files | Action leaves comment.
 
 ## Inputs
 
-All inputs are required and all have default values. The only input absolutely require to be specified in a workflow file is the `repo-token` input.
+All inputs are optional and have default values.
 
 Name | Default | Description
 --- | --- | ---
