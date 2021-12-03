@@ -7,9 +7,9 @@ branding:
 author: 'Matthew Foley'
 inputs:
   repo-token:
-    required: true
+    required: false
     description: 'Repo Access Token'
-    default: ''
+    default: ${{ github.token }}
   ignore-authors:
     required: true
     description: >
