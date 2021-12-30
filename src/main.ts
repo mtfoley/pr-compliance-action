@@ -191,7 +191,11 @@ async function updateReview(
   if (body === review?.body) return
   // if no existing review, body non blank, create a review
   if (review === null && body !== '') {
-    await client.rest.pulls.createReview({...pullRequest, body})
+    await client.rest.pulls.createReview({
+      ...pullRequest,
+      body,
+      event: 'COMMENT'
+    })
     return
   }
   // if body blank and review exists, dismiss it

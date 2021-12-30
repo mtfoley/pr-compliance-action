@@ -278,7 +278,7 @@ function updateReview(pullRequest, body) {
             return;
         // if no existing review, body non blank, create a review
         if (review === null && body !== '') {
-            yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body }));
+            yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: "COMMENT" }));
             return;
         }
         // if body blank and review exists, dismiss it
