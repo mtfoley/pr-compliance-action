@@ -258,14 +258,14 @@ function findExistingReview(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
         let review;
         const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
-        console.log({ reviews });
+        core.debug("reviews: \n" + JSON.stringify(reviews));
         review = reviews.find(review => {
             var _a;
             ((_a = review === null || review === void 0 ? void 0 : review.user) === null || _a === void 0 ? void 0 : _a.login) === 'github-actions[bot]';
         });
         if (review === undefined)
             review = null;
-        console.log({ review });
+        core.debug("review: \n" + JSON.stringify(review));
         return review;
     });
 }
