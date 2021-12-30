@@ -43,10 +43,12 @@ This action drives the following outcomes:
 
 Check | Outcome on Failure
 --- | ---
-PR Title Lint | Action shows as failed check. Action leaves comment.
-PR Refers to Issue | Action closes issue. Action leaves comment.
-PR Originates from Protected Branch | Action closes issue. Action leaves comment.
-PR Avoids Watched Files | Action leaves comment.
+PR Title Lint | Action shows as failed check. Action leaves review comment.
+PR Refers to Issue | Action closes issue. Action leaves review comment.
+PR Originates from Protected Branch | Action closes issue. Action leaves review comment.
+PR Avoids Watched Files | Action leaves review comment.
+
+If a PR is initially deemed non-compliant by the action and a review comment is left, the action will update this same review comment each time it runs again (e.g. if the PR title or description changes). If the PR is found to be compliant after changes, the review comment will be updated to reflect this.
 
 ## Inputs
 

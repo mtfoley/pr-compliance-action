@@ -3,6 +3,18 @@ import * as github from '@actions/github'
 import {context} from '@actions/github/lib/utils'
 import {checkBody, checkTitle, checkBranch} from './checks'
 
+type PullRequestReview = {
+  id: number
+  node_id: string
+  user: {
+    login: string
+    id: number
+    node_id: string
+  } | null
+  body: string
+  state: string
+}
+
 const repoToken = core.getInput('repo-token')
 const ignoreAuthors = core.getMultilineInput('ignore-authors')
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members')
@@ -121,26 +133,25 @@ async function run(): Promise<void> {
           commentsToLeave.push(watchedFilesComment + filesList)
         }
       }
-      // Finally close PR if warranted
+      // Update Review as needed
+      let reviewBody = ''
       if (commentsToLeave.length > 0)
-        await createComment(
-          pr.number,
-          [baseComment, ...commentsToLeave].join('\n\n')
-        )
+        reviewBody = [baseComment, ...commentsToLeave].join('\n\n')
+      await updateReview(
+        {owner: pr.owner, repo: pr.repo, pull_number: pr.number},
+        reviewBody
+      )
       // Finally close PR if warranted
       if (shouldClosePr) await closePullRequest(pr.number)
+    } else {
+      await updateReview(
+        {owner: pr.owner, repo: pr.repo, pull_number: pr.number},
+        ''
+      )
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
-}
-async function createComment(number: number, comment: string) {
-  if (comment.trim() !== '')
-    await client.rest.issues.createComment({
-      ...context.repo,
-      issue_number: number,
-      body: comment
-    })
 }
 async function closePullRequest(number: number) {
   await client.rest.pulls.update({
@@ -163,6 +174,56 @@ async function listFiles(pullRequest: {
 }) {
   const {data: files} = await client.rest.pulls.listFiles(pullRequest)
   return files
+}
+async function findExistingReview(pullRequest: {
+  owner: string
+  repo: string
+  pull_number: number
+}): Promise<PullRequestReview | null> {
+  let review
+  const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
+  review = reviews.find(review => {
+    return (review?.user?.login ?? '') == 'github-actions[bot]'
+  })
+  if (review === undefined) review = null
+  return review
+}
+async function updateReview(
+  pullRequest: {owner: string; repo: string; pull_number: number},
+  body: string
+) {
+  const review = await findExistingReview(pullRequest)
+  // if blank body and no existing review, exit
+  if (body === '' && review === null) return
+  // if review body same as new body, exit
+  if (body === review?.body) return
+  // if no existing review, body non blank, create a review
+  if (review === null && body !== '') {
+    await client.rest.pulls.createReview({
+      ...pullRequest,
+      body,
+      event: 'COMMENT'
+    })
+    return
+  }
+  // if body blank and review exists, update it to show passed
+  if (review !== null && body === '') {
+    await client.rest.pulls.updateReview({
+      ...pullRequest,
+      review_id: review.id,
+      body: 'PR Compliance Checks Passed!'
+    })
+    return
+  }
+  // if body non-blank and review exists, update it
+  if (review !== null && body !== review?.body) {
+    await client.rest.pulls.updateReview({
+      ...pullRequest,
+      review_id: review.id,
+      body
+    })
+    return
+  }
 }
 async function userIsTeamMember(login: string, owner: string) {
   if (login === owner) return true
