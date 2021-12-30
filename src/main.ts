@@ -137,7 +137,10 @@ async function run(): Promise<void> {
       let reviewBody = ''
       if (commentsToLeave.length > 0)
         reviewBody = [baseComment, ...commentsToLeave].join('\n\n')
-      await updateReview({...pr, pull_number: pr.number}, reviewBody)
+      await updateReview(
+        {owner: pr.owner, repo: pr.repo, pull_number: pr.number},
+        reviewBody
+      )
       // Finally close PR if warranted
       if (shouldClosePr) await closePullRequest(pr.number)
     } else {

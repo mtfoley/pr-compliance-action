@@ -222,7 +222,7 @@ function run() {
                 let reviewBody = '';
                 if (commentsToLeave.length > 0)
                     reviewBody = [baseComment, ...commentsToLeave].join('\n\n');
-                yield updateReview(Object.assign(Object.assign({}, pr), { pull_number: pr.number }), reviewBody);
+                yield updateReview({ owner: pr.owner, repo: pr.repo, pull_number: pr.number }, reviewBody);
                 // Finally close PR if warranted
                 if (shouldClosePr)
                     yield closePullRequest(pr.number);
