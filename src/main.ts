@@ -144,7 +144,10 @@ async function run(): Promise<void> {
       // Finally close PR if warranted
       if (shouldClosePr) await closePullRequest(pr.number)
     } else {
-      await updateReview({...pr, pull_number: pr.number}, '')
+      await updateReview(
+        {owner: pr.owner, repo: pr.repo, pull_number: pr.number},
+        ''
+      )
     }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

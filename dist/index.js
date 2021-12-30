@@ -228,7 +228,7 @@ function run() {
                     yield closePullRequest(pr.number);
             }
             else {
-                yield updateReview(Object.assign(Object.assign({}, pr), { pull_number: pr.number }), '');
+                yield updateReview({ owner: pr.owner, repo: pr.repo, pull_number: pr.number }, '');
             }
         }
         catch (error) {
