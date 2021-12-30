@@ -186,9 +186,6 @@ async function findExistingReview(pullRequest: {
     return (review?.user?.login ?? '') == 'github-actions[bot]'
   })
   if (review === undefined) review = null
-  core.debug(
-    'review count: ' + reviews.length + ', review: \n' + JSON.stringify(review)
-  )
   return review
 }
 async function updateReview(

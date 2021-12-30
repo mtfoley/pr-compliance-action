@@ -267,7 +267,6 @@ function findExistingReview(pullRequest) {
         });
         if (review === undefined)
             review = null;
-        core.debug('review count: ' + reviews.length + ', review: \n' + JSON.stringify(review));
         return review;
     });
 }
