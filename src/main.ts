@@ -176,12 +176,13 @@ async function findExistingReview(pullRequest: {
 }): Promise<PullRequestReview | null> {
   let review
   const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
-  core.debug('reviews: \n' + JSON.stringify(reviews))
   review = reviews.find(review => {
-    review?.user?.login === 'github-actions[bot]'
+    return (review?.user?.login ?? '') == 'github-actions[bot]'
   })
   if (review === undefined) review = null
-  core.debug('review: \n' + JSON.stringify(review))
+  core.debug(
+    'review count: ' + reviews.length + ', review: \n' + JSON.stringify(review)
+  )
   return review
 }
 async function updateReview(
