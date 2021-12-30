@@ -258,12 +258,14 @@ function findExistingReview(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
         let review;
         const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
+        console.log({ reviews });
         review = reviews.find(review => {
             var _a;
             ((_a = review === null || review === void 0 ? void 0 : review.user) === null || _a === void 0 ? void 0 : _a.login) === 'github-actions[bot]';
         });
         if (review === undefined)
             review = null;
+        console.log({ review });
         return review;
     });
 }
@@ -278,7 +280,7 @@ function updateReview(pullRequest, body) {
             return;
         // if no existing review, body non blank, create a review
         if (review === null && body !== '') {
-            yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: "COMMENT" }));
+            yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: 'COMMENT' }));
             return;
         }
         // if body blank and review exists, dismiss it
