@@ -285,11 +285,12 @@ function updateReview(pullRequest, body) {
             yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: 'COMMENT' }));
             return;
         }
-        // if body blank and review exists, dismiss it
+        // if body blank and review exists, update it to show passed
         if (review !== null && body === '') {
-            yield client.rest.pulls.dismissReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, message: 'PR Compliance Checks Passed!' }));
+            yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' }));
             return;
         }
+        // if body non-blank and review exists, update it
         if (review !== null && body !== (review === null || review === void 0 ? void 0 : review.body)) {
             yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body }));
             return;

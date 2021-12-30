@@ -203,15 +203,16 @@ async function updateReview(
     })
     return
   }
-  // if body blank and review exists, dismiss it
+  // if body blank and review exists, update it to show passed
   if (review !== null && body === '') {
-    await client.rest.pulls.dismissReview({
+    await client.rest.pulls.updateReview({
       ...pullRequest,
       review_id: review.id,
-      message: 'PR Compliance Checks Passed!'
+      body: 'PR Compliance Checks Passed!'
     })
     return
   }
+  // if body non-blank and review exists, update it
   if (review !== null && body !== review?.body) {
     await client.rest.pulls.updateReview({
       ...pullRequest,
