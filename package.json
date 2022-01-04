@@ -30,7 +30,7 @@
     "@octokit/core": "^3.5.1",
     "conventional-changelog-conventionalcommits": "^4.6.2",
     "conventional-commit-types": "^3.0.0",
-    "conventional-commits-parser": "^3.2.3"
+    "conventional-commits-parser": "^3.2.4"
   },
   "devDependencies": {
     "@types/node": "^17.0.5",
