@@ -18,7 +18,7 @@ Below is a sample yaml file to place in `.github/workflows/`:
 name: PR Compliance
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, edited, reopened]
 
 # Action should have write permission to make updates to PR
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: mtfoley/pr-compliance-action@main
         with:
-          protected-branch: 'master'
+          # all inputs are optional
           watch-files: |
             package.json
             npm-shrinkwrap.json
@@ -39,14 +39,14 @@ jobs:
 
 ## Behavior
 
-This action drives the following outcomes:
+This action drives the following outcomes with all inputs at default:
 
-Check | Outcome on Failure
+Check | Outcome on Flagging
 --- | ---
-PR Title Lint | Action shows as failed check. Action leaves review comment.
-PR Refers to Issue | Action closes issue. Action leaves review comment.
+PR Title Lint Fails | Action shows as failed check. Action leaves review comment.
+PR Does Not Refer to Issue | Action closes issue. Action leaves review comment.
 PR Originates from Protected Branch | Action closes issue. Action leaves review comment.
-PR Avoids Watched Files | Action leaves review comment.
+PR Modifies Watched Files | Action leaves review comment.
 
 If a PR is initially deemed non-compliant by the action and a review comment is left, the action will update this same review comment each time it runs again (e.g. if the PR title or description changes). If the PR is found to be compliant after changes, the review comment will be updated to reflect this.
 
