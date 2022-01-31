@@ -33,7 +33,7 @@
     "conventional-commits-parser": "^3.2.4"
   },
   "devDependencies": {
-    "@types/node": "^17.0.8",
+    "@types/node": "^17.0.13",
     "@typescript-eslint/eslint-plugin": "^5.9.1",
     "@typescript-eslint/parser": "^5.9.1",
     "@vercel/ncc": "^0.33.1",
