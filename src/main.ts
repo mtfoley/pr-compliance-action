@@ -1,7 +1,9 @@
+/* eslint-disable i18n-text/no-en */
+
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import {checkBody, checkBranch, checkTitle} from './checks'
 import {context} from '@actions/github/lib/utils'
-import {checkBody, checkTitle, checkBranch} from './checks'
 
 type PullRequestReview = {
   id: number
@@ -22,6 +24,7 @@ const baseComment = core.getInput('base-comment')
 const bodyRegexInput = core.getInput('body-regex')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
+const bodyCheckEnable = core.getBooleanInput('body-check-enable')
 let protectedBranch = core.getInput('protected-branch')
 const protectedBranchAutoClose = core.getBooleanInput(
   'protected-branch-auto-close'
@@ -32,6 +35,7 @@ const titleCheckEnable = core.getBooleanInput('title-check-enable')
 const filesToWatch = core.getMultilineInput('watch-files')
 const watchedFilesComment = core.getInput('watch-files-comment')
 const client = github.getOctokit(repoToken)
+
 async function run(): Promise<void> {
   try {
     const ctx = github.context
@@ -77,7 +81,7 @@ async function run(): Promise<void> {
     const branch = ctx.payload.pull_request?.head?.ref ?? ''
     const filesModified = await listFiles({...pr, pull_number: pr.number})
     // bodyCheck passes if the author is to be ignored or if the check function passes
-    const bodyCheck = checkBody(body, bodyRegexInput)
+    const bodyCheck = bodyCheckEnable ? checkBody(body, bodyRegexInput) : true
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
       : await checkTitle(title)
@@ -86,7 +90,7 @@ async function run(): Promise<void> {
       .map(file => file.filename)
       .filter(filename => filesToWatch.includes(filename))
     const prCompliant =
-      bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0
+      bodyCheck && titleCheck && branchCheck && filesFlagged.length === 0
     const shouldClosePr =
       (bodyCheck === false && bodyAutoClose === true) ||
       (branchCheck === false && protectedBranchAutoClose === true)
@@ -94,8 +98,8 @@ async function run(): Promise<void> {
     core.setOutput('body-check', bodyCheck)
     core.setOutput('branch-check', branchCheck)
     core.setOutput('title-check', titleCheck)
-    core.setOutput('watched-files-check', filesFlagged.length == 0)
-    let commentsToLeave = []
+    core.setOutput('watched-files-check', filesFlagged.length === 0)
+    const commentsToLeave = []
     if (!prCompliant) {
       // Handle failed body check
       if (!bodyCheck) {
@@ -116,9 +120,9 @@ async function run(): Promise<void> {
         core.setFailed(
           `This PR's title should conform to specification at https://conventionalcommits.org`
         )
-        const errorsComment =
-          '\n\nLinting Errors\n' +
-          titleErrors.map(error => `\n- ${error.message}`).join('')
+        const errorsComment = `\n\nLinting Errors\n${titleErrors
+          .map(error => `\n- ${error.message}`)
+          .join('')}`
         if (titleComment !== '')
           commentsToLeave.push(titleComment + errorsComment)
       }
@@ -127,9 +131,9 @@ async function run(): Promise<void> {
           `This PR modifies the following files: ${filesFlagged.join(', ')}`
         )
         if (watchedFilesComment !== '') {
-          const filesList =
-            '\n\nFiles Matched\n' +
-            filesFlagged.map(file => `\n- ${file}`).join('')
+          const filesList = `\n\nFiles Matched\n${filesFlagged
+            .map(file => `\n- ${file}`)
+            .join('')}`
           commentsToLeave.push(watchedFilesComment + filesList)
         }
       }
@@ -153,28 +157,56 @@ async function run(): Promise<void> {
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
-async function closePullRequest(number: number) {
+
+async function closePullRequest(number: number): Promise<void> {
   await client.rest.pulls.update({
     ...context.repo,
     pull_number: number,
     state: 'closed'
   })
 }
-async function escapeChecks(checkResult: boolean, message: string) {
+
+async function escapeChecks(
+  checkResult: boolean,
+  message: string
+): Promise<void> {
   core.info(message)
   core.setOutput('body-check', checkResult)
   core.setOutput('branch-check', checkResult)
   core.setOutput('title-check', checkResult)
   core.setOutput('watched-files-check', checkResult)
 }
+
 async function listFiles(pullRequest: {
   owner: string
   repo: string
   pull_number: number
-}) {
+}): Promise<
+  {
+    sha: string
+    filename: string
+    status:
+      | 'added'
+      | 'removed'
+      | 'modified'
+      | 'renamed'
+      | 'copied'
+      | 'changed'
+      | 'unchanged'
+    additions: number
+    deletions: number
+    changes: number
+    blob_url: string
+    raw_url: string
+    contents_url: string
+    patch?: string | undefined
+    previous_filename?: string | undefined
+  }[]
+> {
   const {data: files} = await client.rest.pulls.listFiles(pullRequest)
   return files
 }
+
 async function findExistingReview(pullRequest: {
   owner: string
   repo: string
@@ -182,16 +214,17 @@ async function findExistingReview(pullRequest: {
 }): Promise<PullRequestReview | null> {
   let review
   const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
-  review = reviews.find(review => {
-    return (review?.user?.login ?? '') == 'github-actions[bot]'
+  review = reviews.find(r => {
+    return (r?.user?.login ?? '') === 'github-actions[bot]'
   })
   if (review === undefined) review = null
   return review
 }
+
 async function updateReview(
   pullRequest: {owner: string; repo: string; pull_number: number},
   body: string
-) {
+): Promise<void> {
   const review = await findExistingReview(pullRequest)
   // if blank body and no existing review, exit
   if (body === '' && review === null) return
@@ -225,7 +258,11 @@ async function updateReview(
     return
   }
 }
-async function userIsTeamMember(login: string, owner: string) {
+
+async function userIsTeamMember(
+  login: string,
+  owner: string
+): Promise<boolean> {
   if (login === owner) return true
   const {data: userOrgs} = await client.request('GET /users/{user}/orgs', {
     user: login
@@ -234,4 +271,5 @@ async function userIsTeamMember(login: string, owner: string) {
     return userOrg.login === owner
   })
 }
+
 run()

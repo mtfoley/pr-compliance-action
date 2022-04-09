@@ -5,6 +5,7 @@ This action is meant to help in managing inbound PRs that may need adjustment ot
 ## Functionality
 
 It looks for the following:
+
 - [x] PR Title formatted according to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 - [x] PR Body refers to an issue, as detected by a regular expression
 - [x] PR originates from a protected branch e.g. "main", (based on head ref)
@@ -60,6 +61,7 @@ repo-token | `secrets.GITHUB_TOKEN` | Access token for which this action will ru
 ignore-authors | dependabot<br/>dependabot[bot] | If the action detects that the PR author is one of these logins, it will skip checks and set all outputs to `true`.
 base-comment | (see [action.yml](./action.yml)) | Preamble to any comment the action leaves on the PR.
 ignore-team-members | true | Whether to ignore in the case that the PR author is a) the owner of repository, or b) has a public membership[^1] in the org that owns the repository.
+body-check-enable | true | Enable or disable the body check
 body-regex | `(fix\|resolv\|clos)(e)*(s\|d)* #\d+` | Regular expression to identify whether the PR body refers to an issue[^2].
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
