@@ -1,6 +1,6 @@
 import conventionalConfig from 'conventional-changelog-conventionalcommits'
-import * as conventionalTypes from 'conventional-commit-types'
 import {sync} from 'conventional-commits-parser'
+import {types} from 'conventional-commit-types'
 
 type LintRuleOutcome = {
   message: String
@@ -21,10 +21,10 @@ async function checkTitle(
   title: string
 ): Promise<{valid: Boolean; errors: LintRuleOutcome[]}> {
   const {parserOpts} = await conventionalConfig()
-  const defaultTypes = Object.keys(conventionalTypes.types)
+  const defaultTypes = Object.keys(types)
   try {
     const result = sync(title, parserOpts)
-    let errors: LintRuleOutcome[] = []
+    const errors: LintRuleOutcome[] = []
     if (!defaultTypes.includes(result.type))
       errors.push({
         valid: false,
@@ -34,7 +34,7 @@ async function checkTitle(
       })
     if (!result.subject)
       errors.push({valid: false, message: 'No subject found'})
-    return {valid: errors.length == 0, errors}
+    return {valid: errors.length === 0, errors}
   } catch (error) {
     return {
       valid: false,

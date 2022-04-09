@@ -36,6 +36,10 @@ inputs:
       Thank you for your Pull Request! We have run several checks on this pull request in order
       to make sure it's suitable for merging into this project.  The results are listed in the 
       following section.
+  body-check-enable:
+    required: true
+    description: 'Enable or disable the body check'
+    default: true
   body-regex:
     required: true
     description: 'PR Body Regex'
