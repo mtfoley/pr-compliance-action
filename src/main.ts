@@ -99,7 +99,7 @@ async function run(): Promise<void> {
     if (!prCompliant) {
       // Handle failed body check
       if (!bodyCheck) {
-        core.setFailed('PR Body did not match required format')
+        core.setFailed('PR Body did not match required format dude!')
         if (bodyComment !== '') commentsToLeave.push(bodyComment)
       }
       if (!branchCheck) {
