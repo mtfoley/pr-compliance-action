@@ -61,6 +61,7 @@ ignore-authors | dependabot<br/>dependabot[bot] | If the action detects that the
 base-comment | (see [action.yml](./action.yml)) | Preamble to any comment the action leaves on the PR.
 ignore-team-members | true | Whether to ignore in the case that the PR author is a) the owner of repository, or b) has a public membership[^1] in the org that owns the repository.
 body-regex | `(fix\|resolv\|clos)(e)*(s\|d)* #\d+` | Regular expression to identify whether the PR body refers to an issue[^2].
+body-fail | false | Whether to trigger a failing check when the body-regex is not matched in the PR body. Triggers a warning by default.
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
 protected-branch | (Blank) | Branch that check should ensure that PR does not use as it's head. If left blank, it falls back to default branch.

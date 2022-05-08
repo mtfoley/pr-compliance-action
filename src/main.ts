@@ -19,6 +19,7 @@ const repoToken = core.getInput('repo-token')
 const ignoreAuthors = core.getMultilineInput('ignore-authors')
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members')
 const baseComment = core.getInput('base-comment')
+const bodyFail = core.getBooleanInput('body-fail')
 const bodyRegexInput = core.getInput('body-regex')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
@@ -99,7 +100,12 @@ async function run(): Promise<void> {
     if (!prCompliant) {
       // Handle failed body check
       if (!bodyCheck) {
-        core.warning('PR Body did not match required format')
+        const bodyCheckMessage = 'PR Body did not match required format'
+        if (bodyFail) {
+          core.setFailed(bodyCheckMessage)
+        } else {
+          core.warning(bodyCheckMessage)
+        }
         if (bodyComment !== '') commentsToLeave.push(bodyComment)
       }
       if (!branchCheck) {
