@@ -40,7 +40,7 @@ inputs:
     required: true
     description: 'PR Body Regex'
     default: '(fix|resolv|clos)(e)*(s|d)* #\d+'
-  body-check:
+  body-fail:
     required: true
     description: >
       Whether to trigger a failing check when the body-regex is not matched in the PR body.
