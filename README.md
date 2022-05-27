@@ -7,6 +7,7 @@ This action is meant to help in managing inbound PRs that may need adjustment ot
 It looks for the following:
 - [x] PR Title formatted according to [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 - [x] PR Body refers to an issue, as detected by a regular expression
+- [x] PR Body does not include invalid content (e.g. placeholders from PR template that are meant to be replaced)
 - [x] PR originates from a branch other than the protected branch, e.g. "main", (based on head ref)
 - [x] PR does not include modifications to specific files that should be reviewed carefully (e.g. package.json)
 
@@ -64,6 +65,10 @@ body-regex | `(fix\|resolv\|clos)(e)*(s\|d)* #\d+` | Regular expression to ident
 body-fail | false | Whether to trigger a failing check when the body-regex is not matched in the PR body. Triggers a warning by default.
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
+body-invalid-regex | '' | Regular expression to identify whether the PR body contains invalid content, such as template placeholder text that is intended to be replaced. A blank value for the regex effectively disables the check.
+body-invalid-fail | false | Whether to trigger a failing check when the body-invalid-regex is matched in the PR body. Triggers a warning by default.
+body-invalid-auto-close | true | Whether or not to auto-close on failed invalid content check of PR Body
+body-invalid-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed invalid content check of PR Body
 protected-branch | (Blank) | Branch that check should ensure that PR does not use as it's head. If left blank, it falls back to default branch.
 protected-branch-auto-close | true | Whether or not to auto-close on failed check of PR head branch
 protected-branch-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR head branch.
@@ -83,6 +88,7 @@ Each check performed is also manifested in an output.
 Name | Description
 --- | ---
 body-check | Result of match for PR Body against configured regex.
+body-invalid-check | Result of match for PR Body against configured regex looking for invalid content.
 branch-check | Result of check to ensure PR head is not protected branch.
 title-check | Result of check to ensure PR title is formatted per [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 watch-files-check | Result of check for watched files having been modified. True if no modifications found to watched files.
