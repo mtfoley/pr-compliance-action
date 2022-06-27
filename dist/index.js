@@ -140,6 +140,10 @@ const bodyFail = core.getBooleanInput('body-fail');
 const bodyRegexInput = core.getInput('body-regex');
 const bodyAutoClose = core.getBooleanInput('body-auto-close');
 const bodyComment = core.getInput('body-comment');
+const bodyInvalidFail = core.getBooleanInput('body-invalid-fail');
+const bodyInvalidRegexInput = core.getInput('body-invalid-regex');
+const bodyInvalidAutoClose = core.getBooleanInput('body-invalid-auto-close');
+const bodyInvalidComment = core.getInput('body-invalid-comment');
 let protectedBranch = core.getInput('protected-branch');
 const protectedBranchAutoClose = core.getBooleanInput('protected-branch-auto-close');
 const protectedBranchComment = core.getInput('protected-branch-comment');
@@ -183,6 +187,8 @@ function run() {
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
+            // bodyInvalidCheck passes if regex input is blank or if body does not match regex input
+            const bodyInvalidCheck = bodyInvalidRegexInput === '' || !(0, checks_1.checkBody)(body, bodyInvalidRegexInput);
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
@@ -190,11 +196,17 @@ function run() {
             const filesFlagged = filesModified
                 .map(file => file.filename)
                 .filter(filename => filesToWatch.includes(filename));
-            const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
+            const prCompliant = bodyCheck &&
+                bodyInvalidCheck &&
+                titleCheck &&
+                branchCheck &&
+                filesFlagged.length == 0;
             const shouldClosePr = (bodyCheck === false && bodyAutoClose === true) ||
+                (bodyInvalidCheck === false && bodyInvalidAutoClose === true) ||
                 (branchCheck === false && protectedBranchAutoClose === true);
             // Set Output values
             core.setOutput('body-check', bodyCheck);
+            core.setOutput('body-invalid-check', bodyInvalidCheck);
             core.setOutput('branch-check', branchCheck);
             core.setOutput('title-check', titleCheck);
             core.setOutput('watched-files-check', filesFlagged.length == 0);
@@ -211,6 +223,17 @@ function run() {
                     }
                     if (bodyComment !== '')
                         commentsToLeave.push(bodyComment);
+                }
+                if (!bodyInvalidCheck) {
+                    const bodyInvalidCheckMessage = 'PR Body contained invalid content';
+                    if (bodyInvalidFail) {
+                        core.setFailed(bodyInvalidCheckMessage);
+                    }
+                    else {
+                        core.warning(bodyInvalidCheckMessage);
+                    }
+                    if (bodyInvalidComment !== '')
+                        commentsToLeave.push(bodyInvalidComment);
                 }
                 if (!branchCheck) {
                     core.warning(`PR has ${protectedBranch} as its head branch, which is discouraged`);
@@ -261,6 +284,7 @@ function escapeChecks(checkResult, message) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(message);
         core.setOutput('body-check', checkResult);
+        core.setOutput('body-invalid-check', checkResult);
         core.setOutput('branch-check', checkResult);
         core.setOutput('title-check', checkResult);
         core.setOutput('watched-files-check', checkResult);
