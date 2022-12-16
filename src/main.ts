@@ -87,7 +87,7 @@ async function run(): Promise<void> {
       .map(file => file.filename)
       .filter(filename => filesToWatch.includes(filename))
     const prCompliant =
-      bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0
+      bodyCheck && titleCheck && branchCheck && filesFlagged.length === 0
     const shouldClosePr =
       (bodyCheck === false && bodyAutoClose === true) ||
       (branchCheck === false && protectedBranchAutoClose === true)
@@ -95,8 +95,8 @@ async function run(): Promise<void> {
     core.setOutput('body-check', bodyCheck)
     core.setOutput('branch-check', branchCheck)
     core.setOutput('title-check', titleCheck)
-    core.setOutput('watched-files-check', filesFlagged.length == 0)
-    let commentsToLeave = []
+    core.setOutput('watched-files-check', filesFlagged.length === 0)
+    const commentsToLeave = []
     if (!prCompliant) {
       // Handle failed body check
       if (!bodyCheck) {
@@ -122,9 +122,9 @@ async function run(): Promise<void> {
         core.setFailed(
           `This PR's title should conform to specification at https://conventionalcommits.org`
         )
-        const errorsComment =
-          '\n\nLinting Errors\n' +
-          titleErrors.map(error => `\n- ${error.message}`).join('')
+        const errorsComment = `\n\nLinting Errors\n${titleErrors
+          .map(error => `\n- ${error.message}`)
+          .join('')}`
         if (titleComment !== '')
           commentsToLeave.push(titleComment + errorsComment)
       }
@@ -133,9 +133,9 @@ async function run(): Promise<void> {
           `This PR modifies the following files: ${filesFlagged.join(', ')}`
         )
         if (watchedFilesComment !== '') {
-          const filesList =
-            '\n\nFiles Matched\n' +
-            filesFlagged.map(file => `\n- ${file}`).join('')
+          const filesList = `\n\nFiles Matched\n${filesFlagged
+            .map(file => `\n- ${file}`)
+            .join('')}`
           commentsToLeave.push(watchedFilesComment + filesList)
         }
       }
@@ -166,7 +166,7 @@ async function closePullRequest(number: number) {
     state: 'closed'
   })
 }
-async function escapeChecks(checkResult: boolean, message: string) {
+function escapeChecks(checkResult: boolean, message: string) {
   core.info(message)
   core.setOutput('body-check', checkResult)
   core.setOutput('branch-check', checkResult)
@@ -188,8 +188,8 @@ async function findExistingReview(pullRequest: {
 }): Promise<PullRequestReview | null> {
   let review
   const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
-  review = reviews.find(review => {
-    return (review?.user?.login ?? '') == 'github-actions[bot]'
+  review = reviews.find(innerReview => {
+    return (innerReview?.user?.login ?? '') === 'github-actions[bot]'
   })
   if (review === undefined) review = null
   return review
