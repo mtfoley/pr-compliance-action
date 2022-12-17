@@ -3,28 +3,28 @@ import * as conventionalTypes from 'conventional-commit-types'
 import {sync} from 'conventional-commits-parser'
 
 type LintRuleOutcome = {
-  message: String
-  valid: Boolean
+  message: string
+  valid: boolean
 }
 
-function checkBody(body: string, regexString: string): Boolean {
+function checkBody(body: string, regexString: string): boolean {
   const regex = new RegExp(regexString, 'mi')
   const bodyNoComments = body.replace(/<!--(.*?)-->/gms, '')
   return regex.test(bodyNoComments)
 }
 
-function checkBranch(branch: string, protectedBranch: string): Boolean {
+function checkBranch(branch: string, protectedBranch: string): boolean {
   return branch !== protectedBranch
 }
 
 async function checkTitle(
   title: string
-): Promise<{valid: Boolean; errors: LintRuleOutcome[]}> {
+): Promise<{valid: boolean; errors: LintRuleOutcome[]}> {
   const {parserOpts} = await conventionalConfig()
   const defaultTypes = Object.keys(conventionalTypes.types)
   try {
     const result = sync(title, parserOpts)
-    let errors: LintRuleOutcome[] = []
+    const errors: LintRuleOutcome[] = []
     if (!defaultTypes.includes(result.type))
       errors.push({
         valid: false,
@@ -34,7 +34,7 @@ async function checkTitle(
       })
     if (!result.subject)
       errors.push({valid: false, message: 'No subject found'})
-    return {valid: errors.length == 0, errors}
+    return {valid: errors.length === 0, errors}
   } catch (error) {
     return {
       valid: false,
