@@ -62,7 +62,7 @@ function checkTitle(title) {
         const defaultTypes = Object.keys(conventionalTypes.types);
         try {
             const result = (0, conventional_commits_parser_1.sync)(title, parserOpts);
-            let errors = [];
+            const errors = [];
             if (!defaultTypes.includes(result.type))
                 errors.push({
                     valid: false,
@@ -70,7 +70,7 @@ function checkTitle(title) {
                 });
             if (!result.subject)
                 errors.push({ valid: false, message: 'No subject found' });
-            return { valid: errors.length == 0, errors };
+            return { valid: errors.length === 0, errors };
         }
         catch (error) {
             return {
@@ -190,15 +190,15 @@ function run() {
             const filesFlagged = filesModified
                 .map(file => file.filename)
                 .filter(filename => filesToWatch.includes(filename));
-            const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length == 0;
+            const prCompliant = bodyCheck && titleCheck && branchCheck && filesFlagged.length === 0;
             const shouldClosePr = (bodyCheck === false && bodyAutoClose === true) ||
                 (branchCheck === false && protectedBranchAutoClose === true);
             // Set Output values
             core.setOutput('body-check', bodyCheck);
             core.setOutput('branch-check', branchCheck);
             core.setOutput('title-check', titleCheck);
-            core.setOutput('watched-files-check', filesFlagged.length == 0);
-            let commentsToLeave = [];
+            core.setOutput('watched-files-check', filesFlagged.length === 0);
+            const commentsToLeave = [];
             if (!prCompliant) {
                 // Handle failed body check
                 if (!bodyCheck) {
@@ -220,16 +220,18 @@ function run() {
                 }
                 if (!titleCheck) {
                     core.setFailed(`This PR's title should conform to specification at https://conventionalcommits.org`);
-                    const errorsComment = '\n\nLinting Errors\n' +
-                        titleErrors.map(error => `\n- ${error.message}`).join('');
+                    const errorsComment = `\n\nLinting Errors\n${titleErrors
+                        .map(error => `\n- ${error.message}`)
+                        .join('')}`;
                     if (titleComment !== '')
                         commentsToLeave.push(titleComment + errorsComment);
                 }
                 if (filesFlagged.length > 0) {
                     core.warning(`This PR modifies the following files: ${filesFlagged.join(', ')}`);
                     if (watchedFilesComment !== '') {
-                        const filesList = '\n\nFiles Matched\n' +
-                            filesFlagged.map(file => `\n- ${file}`).join('');
+                        const filesList = `\n\nFiles Matched\n${filesFlagged
+                            .map(file => `\n- ${file}`)
+                            .join('')}`;
                         commentsToLeave.push(watchedFilesComment + filesList);
                     }
                 }
@@ -258,13 +260,11 @@ function closePullRequest(number) {
     });
 }
 function escapeChecks(checkResult, message) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.info(message);
-        core.setOutput('body-check', checkResult);
-        core.setOutput('branch-check', checkResult);
-        core.setOutput('title-check', checkResult);
-        core.setOutput('watched-files-check', checkResult);
-    });
+    core.info(message);
+    core.setOutput('body-check', checkResult);
+    core.setOutput('branch-check', checkResult);
+    core.setOutput('title-check', checkResult);
+    core.setOutput('watched-files-check', checkResult);
 }
 function listFiles(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -276,9 +276,9 @@ function findExistingReview(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
         let review;
         const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
-        review = reviews.find(review => {
+        review = reviews.find(innerReview => {
             var _a, _b;
-            return ((_b = (_a = review === null || review === void 0 ? void 0 : review.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : '') == 'github-actions[bot]';
+            return ((_b = (_a = innerReview === null || innerReview === void 0 ? void 0 : innerReview.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : '') === 'github-actions[bot]';
         });
         if (review === undefined)
             review = null;
