@@ -17,22 +17,29 @@ const goodBody =
 test('checkBody false on empty', () => {
   const regexString = '(fixes|closes) #d+'
   const check = checkBody('', regexString)
-  expect(check).toBeFalsy()
+  expect(check.valid).toBeFalsy()
 })
 test('checkBody false on invalid issue reference', () => {
   const regexString = '(fixes|closes) #\\d+'
   const check = checkBody(badBody, regexString)
-  expect(check).toBeFalsy()
+  expect(check.valid).toBeFalsy()
 })
 test('checkBody false when valid issue reference is inside comment', () => {
   const regexString = '(fixes|closes) #\\d+'
   const check = checkBody(commentedBadBody, regexString)
-  expect(check).toBeFalsy()
+  expect(check.valid).toBeFalsy()
 })
 test('checkBody true on valid message with multiline', () => {
   const regexString = '(fixes|closes) #\\d+'
   const check = checkBody(goodBody, regexString)
-  expect(check).toBeTruthy()
+  expect(check.valid).toBeTruthy()
+})
+test('checkBody extracts linked issue number on valid message', () => {
+  const regexString = '(fixes|closes) #(?<issue>\\d+)'
+  const check = checkBody(goodBody, regexString)
+  expect(check.valid).toBeTruthy()
+  expect(check.groups).toHaveProperty('issue')
+  expect(check.groups?.issue).toEqual('123')
 })
 test('checkTitle false on empty', async () => {
   const {valid, errors} = await checkTitle('')

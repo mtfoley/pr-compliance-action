@@ -6,11 +6,26 @@ type LintRuleOutcome = {
   message: string
   valid: boolean
 }
+type BodyCheckOutcome = {
+  valid: boolean
+  groups?: RegExpExecArray['groups']
+}
 
-function checkBody(body: string, regexString: string): boolean {
+function checkBody(body: string, regexString: string): BodyCheckOutcome {
   const regex = new RegExp(regexString, 'mi')
   const bodyNoComments = body.replace(/<!--(.*?)-->/gms, '')
-  return regex.test(bodyNoComments)
+  const match = bodyNoComments.match(regex)
+  if (match) {
+    const valid = true
+    if (match.groups) {
+      return {
+        valid: true,
+        groups: match.groups
+      }
+    }
+    return {valid}
+  }
+  return {valid: false}
 }
 
 function checkBranch(branch: string, protectedBranch: string): boolean {

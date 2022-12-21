@@ -39,7 +39,7 @@ inputs:
   body-regex:
     required: true
     description: 'PR Body Regex'
-    default: '(fix|resolv|clos)(e)*(s|d)* #\d+'
+    default: '(fix|resolv|clos)(e)*(s|d)* #(?<issue>\d)+'
   body-fail:
     required: true
     description: >
@@ -49,6 +49,18 @@ inputs:
     required: true
     description: 'Whether or not to auto-close on failed check of PR Body'
     default: true
+  issue-labels-required:
+    required: true
+    description: >
+      Label(s) to verify present on linked issue, e.g. "accepting PRs".
+      Each line in this input corresponds to a label, and all labels specified
+      must be present for the check to pass.
+    default: ''
+  issue-labels-fail:
+    required: true
+    description: >
+      Whether to trigger a failing check when the labels specified in `issue-labels-required`
+      input are not found on the linked issue.
   body-comment:
     required: true
     description: 'Comment to leave on PR on failed check of PR Body'

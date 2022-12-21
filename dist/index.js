@@ -49,7 +49,18 @@ const conventional_commits_parser_1 = __nccwpck_require__(1655);
 function checkBody(body, regexString) {
     const regex = new RegExp(regexString, 'mi');
     const bodyNoComments = body.replace(/<!--(.*?)-->/gms, '');
-    return regex.test(bodyNoComments);
+    const match = bodyNoComments.match(regex);
+    if (match) {
+        const valid = true;
+        if (match.groups) {
+            return {
+                valid: true,
+                groups: match.groups
+            };
+        }
+        return { valid };
+    }
+    return { valid: false };
 }
 exports.checkBody = checkBody;
 function checkBranch(branch, protectedBranch) {
@@ -182,10 +193,18 @@ function run() {
             const branch = (_r = (_q = (_p = ctx.payload.pull_request) === null || _p === void 0 ? void 0 : _p.head) === null || _q === void 0 ? void 0 : _q.ref) !== null && _r !== void 0 ? _r : '';
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
-            const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
+            const { valid: bodyCheck, groups: bodyCheckMatch } = (0, checks_1.checkBody)(body, bodyRegexInput);
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
+            if (bodyCheck && (bodyCheckMatch === null || bodyCheckMatch === void 0 ? void 0 : bodyCheckMatch.issue)) {
+                const labelsOnIssue = yield listLabels({
+                    owner: repoOwner,
+                    repo: utils_1.context.repo.repo,
+                    issue_number: Number(bodyCheckMatch.issue)
+                });
+                core.debug(JSON.stringify({ labelsOnIssue }));
+            }
             const branchCheck = (0, checks_1.checkBranch)(branch, protectedBranch);
             const filesFlagged = filesModified
                 .map(file => file.filename)
@@ -265,6 +284,12 @@ function escapeChecks(checkResult, message) {
     core.setOutput('branch-check', checkResult);
     core.setOutput('title-check', checkResult);
     core.setOutput('watched-files-check', checkResult);
+}
+function listLabels(issue) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const { data: labels } = yield client.rest.issues.listLabelsOnIssue(issue);
+        return labels;
+    });
 }
 function listFiles(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {

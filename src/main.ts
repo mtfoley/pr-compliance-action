@@ -78,10 +78,21 @@ async function run(): Promise<void> {
     const branch = ctx.payload.pull_request?.head?.ref ?? ''
     const filesModified = await listFiles({...pr, pull_number: pr.number})
     // bodyCheck passes if the author is to be ignored or if the check function passes
-    const bodyCheck = checkBody(body, bodyRegexInput)
+    const {valid: bodyCheck, groups: bodyCheckMatch} = checkBody(
+      body,
+      bodyRegexInput
+    )
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
       : await checkTitle(title)
+    if (bodyCheck && bodyCheckMatch?.issue) {
+      const labelsOnIssue = await listLabels({
+        owner: repoOwner,
+        repo: context.repo.repo,
+        issue_number: Number(bodyCheckMatch.issue)
+      })
+      core.debug(JSON.stringify({labelsOnIssue}))
+    }
     const branchCheck = checkBranch(branch, protectedBranch)
     const filesFlagged = filesModified
       .map(file => file.filename)
@@ -172,6 +183,14 @@ function escapeChecks(checkResult: boolean, message: string) {
   core.setOutput('branch-check', checkResult)
   core.setOutput('title-check', checkResult)
   core.setOutput('watched-files-check', checkResult)
+}
+async function listLabels(issue: {
+  owner: string
+  repo: string
+  issue_number: number
+}) {
+  const {data: labels} = await client.rest.issues.listLabelsOnIssue(issue)
+  return labels
 }
 async function listFiles(pullRequest: {
   owner: string
