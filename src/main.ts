@@ -20,7 +20,8 @@ const ignoreAuthors = core.getMultilineInput('ignore-authors')
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members')
 const baseComment = core.getInput('base-comment')
 const bodyFail = core.getBooleanInput('body-fail')
-const bodyRegexInput = core.getInput('body-regex')
+const bodyRegexInputs = core.getMultilineInput('body-regex')
+const bodyRegexMatchAll = core.getBooleanInput('body-regex-match-all')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
 let protectedBranch = core.getInput('protected-branch')
@@ -77,8 +78,16 @@ async function run(): Promise<void> {
     const title = ctx.payload.pull_request?.title ?? ''
     const branch = ctx.payload.pull_request?.head?.ref ?? ''
     const filesModified = await listFiles({...pr, pull_number: pr.number})
-    // bodyCheck passes if the author is to be ignored or if the check function passes
-    const bodyCheck = checkBody(body, bodyRegexInput)
+    let bodyCheck = false
+    if (bodyRegexMatchAll) {
+      bodyCheck = bodyRegexInputs.every(regexInput => {
+        return checkBody(body, regexInput)
+      })
+    } else {
+      bodyCheck = bodyRegexInputs.some(regexInput => {
+        return checkBody(body, regexInput)
+      })
+    }
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
       : await checkTitle(title)

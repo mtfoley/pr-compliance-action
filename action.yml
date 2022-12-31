@@ -38,8 +38,13 @@ inputs:
       following section.
   body-regex:
     required: true
-    description: 'PR Body Regex'
-    default: '(fix|resolv|clos)(e)*(s|d)* #\d+'
+    description: 'PR Body Regular Expression(s)'
+    default: |
+      '(fix|resolv|clos)(e)*(s|d)* #\d+'
+  body-regex-match-all:
+    required: true
+    description: 'Whether or not to match body to *all* expressions in `body-regex` list. Defaults to false (matching any).'
+    default: false
   body-fail:
     required: true
     description: >

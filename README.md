@@ -60,7 +60,8 @@ repo-token | `secrets.GITHUB_TOKEN` | Access token for which this action will ru
 ignore-authors | dependabot<br/>dependabot[bot] | If the action detects that the PR author is one of these logins, it will skip checks and set all outputs to `true`.
 base-comment | (see [action.yml](./action.yml)) | Preamble to any comment the action leaves on the PR.
 ignore-team-members | true | Whether to ignore in the case that the PR author is a) the owner of repository, or b) has a public membership[^1] in the org that owns the repository.
-body-regex | `(fix\|resolv\|clos)(e)*(s\|d)* #\d+` | Regular expression to identify whether the PR body refers to an issue[^2][^3].
+body-regex | `(fix\|resolv\|clos)(e)*(s\|d)* #\d+` | Regular expression(s) to identify whether the PR body refers to an issue[^2][^3][^4].
+body-regex-match-all | false | Whether or not to match body to *all* expressions in `body-regex` list. Defaults to false (matching any).
 body-fail | false | Whether to trigger a failing check when the body-regex is not matched in the PR body. Triggers a warning by default.
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
@@ -73,8 +74,9 @@ watch-files | (Blank) | Files to flag for modifications (e.g. package.json)
 watch-files-comment | (see [action.yml](./action.yml)) | Comment to leave on PR when watched files have been changed.
 
 [^1]: In a case where a contributor has a private membership to the org, the `ignore-authors` may be used to skip checks - however, this workflow file configuration could effectively make membership public.
-[^2]: Default regular expression is based on [linking to an issue using a keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword). To keep PRs related to issues within the same same repo, we use the `KEYWORD #ISSUE-NUMBER` syntax. However, one could also use a regular expression like `(fix\|resolv\|clos)(e)*(s|d)* (my-org)\/([a-z0-9\-_]*)#\d+`
-[^3]: The body check can be configured to always pass by using a sufficiently generic regex, e.g. `.*`, that will  match any PR description.
+[^2]: By default, the single regular expression used is based on [linking to an issue using a keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword). To keep PRs related to issues within the same same repo, we use the `KEYWORD #ISSUE-NUMBER` syntax. However, one could also use a regular expression like `(fix\|resolv\|clos)(e)*(s|d)* (my-org)\/([a-z0-9\-_]*)#\d+`
+[^3]: The body regular expressions can be provided one per line.
+[^4]: The body check can be configured to always pass by using a sufficiently generic regex, e.g. `.*`, that will  match any PR description.
 
 ## Outputs
 

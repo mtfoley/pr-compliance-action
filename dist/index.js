@@ -137,7 +137,8 @@ const ignoreAuthors = core.getMultilineInput('ignore-authors');
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members');
 const baseComment = core.getInput('base-comment');
 const bodyFail = core.getBooleanInput('body-fail');
-const bodyRegexInput = core.getInput('body-regex');
+const bodyRegexInputs = core.getMultilineInput('body-regex');
+const bodyRegexMatchAll = core.getBooleanInput('body-regex-match-all');
 const bodyAutoClose = core.getBooleanInput('body-auto-close');
 const bodyComment = core.getInput('body-comment');
 let protectedBranch = core.getInput('protected-branch');
@@ -181,8 +182,17 @@ function run() {
             const title = (_o = (_m = ctx.payload.pull_request) === null || _m === void 0 ? void 0 : _m.title) !== null && _o !== void 0 ? _o : '';
             const branch = (_r = (_q = (_p = ctx.payload.pull_request) === null || _p === void 0 ? void 0 : _p.head) === null || _q === void 0 ? void 0 : _q.ref) !== null && _r !== void 0 ? _r : '';
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
-            // bodyCheck passes if the author is to be ignored or if the check function passes
-            const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
+            let bodyCheck = false;
+            if (bodyRegexMatchAll) {
+                bodyCheck = bodyRegexInputs.every(regexInput => {
+                    return (0, checks_1.checkBody)(body, regexInput);
+                });
+            }
+            else {
+                bodyCheck = bodyRegexInputs.some(regexInput => {
+                    return (0, checks_1.checkBody)(body, regexInput);
+                });
+            }
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
