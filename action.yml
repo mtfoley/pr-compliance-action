@@ -40,7 +40,7 @@ inputs:
     required: true
     description: 'PR Body Regular Expression(s)'
     default: |
-      '(fix|resolv|clos)(e)*(s|d)* #\d+'
+      '(fix(es|ed)?|((resolve|close)(s|d)?)) #\d*[1-9]\d*'
   body-regex-match-all:
     required: true
     description: 'Whether or not to match body to *all* expressions in `body-regex` list. Defaults to false (matching any).'
