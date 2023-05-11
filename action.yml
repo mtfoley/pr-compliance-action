@@ -62,6 +62,24 @@ inputs:
 
       The check is looking for a phrase similar to: "Fixes #XYZ" or "Resolves #XYZ" where XYZ is the issue
       number that this PR is meant to address.
+  issue-labels:
+    default: ''
+    description: >
+      Label(s) to verify present on linked issue, e.g. "accepting PRs".
+      Each line in this input corresponds to a label, and all labels specified
+      must be present for the check to pass.
+  issue-labels-auto-close:
+    required: true
+    description: Whether to auto-close on failed check of required issue labels'
+    default: true
+  issue-labels-comment:
+    default: >
+      ## Required Issue Labels Missing
+
+      In order to be considered for merging, the pull request's linked issues
+      must each be given label indicating they're accepting pull requests.
+    description: 'Comment to leave on PR on failed check of required issue label'
+    required: true
   protected-branch:
     required: true
     description: 'Protected Branch'
