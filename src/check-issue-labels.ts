@@ -60,6 +60,7 @@ export async function checkIssueLabels(
   }`,
       {pull}
     )) as QueryResult
+    core.debug(`Received from GraphQL: ${JSON.stringify(result)}`)
     return checkLinkedIssueLabels(result, requiredLabels)
   } catch (error) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

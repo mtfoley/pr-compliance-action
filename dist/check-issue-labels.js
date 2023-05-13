@@ -63,6 +63,7 @@ function checkIssueLabels(client, pull, requiredLabels) {
       }
     }
   }`, { pull }));
+            core.debug(`Received from GraphQL: ${JSON.stringify(result)}`);
             return (0, check_linked_issue_labels_1.checkLinkedIssueLabels)(result, requiredLabels);
         }
         catch (error) {

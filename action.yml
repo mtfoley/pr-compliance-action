@@ -135,6 +135,8 @@ outputs:
     description: 'Result of match for PR Body against configured regex.'
   branch-check:
     description: 'Result of check to ensure PR head is not protected branch.'
+  issue-check:
+    description: 'Result of check to ensure linked issue has required labels.'
   title-check:
     description: 'Result of check to ensure PR title is formatted per [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)'
   watch-files-check:

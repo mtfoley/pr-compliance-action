@@ -91,7 +91,9 @@ function run() {
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
+            core.debug(`Checking issue labels: ${issueLabels.join(',')}`);
             const issueLabelErrors = yield (0, check_issue_labels_1.checkIssueLabels)(client, pr.number, issueLabels);
+            core.debug(`Received issue label errors: ${issueLabelErrors.join(',')}`);
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
@@ -110,7 +112,7 @@ function run() {
             // Set Output values
             core.setOutput('body-check', bodyCheck);
             core.setOutput('branch-check', branchCheck);
-            core.setOutput('issue-labels-check', issueLabelErrors);
+            core.setOutput('issue-check', !!issueLabelErrors.length);
             core.setOutput('title-check', titleCheck);
             core.setOutput('watched-files-check', filesFlagged.length === 0);
             const commentsToLeave = [];
