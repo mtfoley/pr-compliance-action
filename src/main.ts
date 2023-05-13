@@ -83,13 +83,11 @@ async function run(): Promise<void> {
     const filesModified = await listFiles({...pr, pull_number: pr.number})
     // bodyCheck passes if the author is to be ignored or if the check function passes
     const bodyCheck = checkBody(body, bodyRegexInput)
-    core.debug(`Checking issue labels: ${issueLabels.join(',')}`)
     const issueLabelErrors = await checkIssueLabels(
       client,
       pr.number,
       issueLabels
     )
-    core.debug(`Received issue label errors: ${issueLabelErrors.join(',')}`)
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
       : await checkTitle(title)
@@ -193,6 +191,7 @@ function escapeChecks(checkResult: boolean, message: string) {
   core.info(message)
   core.setOutput('body-check', checkResult)
   core.setOutput('branch-check', checkResult)
+  core.setOutput('issue-check', checkResult)
   core.setOutput('title-check', checkResult)
   core.setOutput('watched-files-check', checkResult)
 }
