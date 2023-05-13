@@ -65,12 +65,12 @@ inputs:
   issue-labels:
     default: ''
     description: >
-      Label(s) to verify present on linked issue, e.g. "accepting PRs".
+      Label(s) to verify are present on linked issue, e.g. "accepting PRs".
       Each line in this input corresponds to a label, and all labels specified
       must be present for the check to pass.
   issue-labels-auto-close:
     required: true
-    description: Whether to auto-close on failed check of required issue labels'
+    description: Whether to auto-close on failed check of required issue labels
     default: true
   issue-labels-comment:
     default: >
