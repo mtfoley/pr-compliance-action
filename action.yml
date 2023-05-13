@@ -77,7 +77,7 @@ inputs:
       ## Required Issue Labels Missing
 
       In order to be considered for merging, the pull request's linked issues
-      must each be given label indicating they're accepting pull requests.
+      must each be labeled indicating they're accepting pull requests.
     description: 'Comment to leave on PR on failed check of required issue label'
     required: true
   protected-branch:
