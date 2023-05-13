@@ -91,7 +91,11 @@ function run() {
             const filesModified = yield listFiles(Object.assign(Object.assign({}, pr), { pull_number: pr.number }));
             // bodyCheck passes if the author is to be ignored or if the check function passes
             const bodyCheck = (0, checks_1.checkBody)(body, bodyRegexInput);
-            const issueLabelErrors = yield (0, check_issue_labels_1.checkIssueLabels)(client, pr.number, issueLabels);
+            const issueLabelErrors = yield (0, check_issue_labels_1.checkIssueLabels)(client, {
+                owner: pr.owner,
+                pull: pr.number,
+                repo: pr.repo
+            }, issueLabels);
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
@@ -100,7 +104,7 @@ function run() {
                 .map(file => file.filename)
                 .filter(filename => filesToWatch.includes(filename));
             const prCompliant = bodyCheck &&
-                !issueLabelErrors.length &&
+                issueLabelErrors.length === 0 &&
                 titleCheck &&
                 branchCheck &&
                 filesFlagged.length === 0;
@@ -133,7 +137,7 @@ function run() {
                     if (protectedBranchComment !== '')
                         commentsToLeave.push(protectedBranchComment.replace(branchCommentRegex, protectedBranch));
                 }
-                if (issueLabelErrors.length) {
+                if (issueLabelErrors.length > 0) {
                     core.setFailed(`This PR's linked issues are missing required labels.`);
                     commentsToLeave.push([issueLabelsComment, ...issueLabelErrors].join('\n'));
                 }

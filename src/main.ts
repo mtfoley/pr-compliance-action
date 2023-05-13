@@ -85,7 +85,11 @@ async function run(): Promise<void> {
     const bodyCheck = checkBody(body, bodyRegexInput)
     const issueLabelErrors = await checkIssueLabels(
       client,
-      pr.number,
+      {
+        owner: pr.owner,
+        pull: pr.number,
+        repo: pr.repo
+      },
       issueLabels
     )
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
@@ -97,7 +101,7 @@ async function run(): Promise<void> {
       .filter(filename => filesToWatch.includes(filename))
     const prCompliant =
       bodyCheck &&
-      !issueLabelErrors.length &&
+      issueLabelErrors.length === 0 &&
       titleCheck &&
       branchCheck &&
       filesFlagged.length === 0
@@ -133,7 +137,7 @@ async function run(): Promise<void> {
             protectedBranchComment.replace(branchCommentRegex, protectedBranch)
           )
       }
-      if (issueLabelErrors.length) {
+      if (issueLabelErrors.length > 0) {
         core.setFailed(`This PR's linked issues are missing required labels.`)
         commentsToLeave.push(
           [issueLabelsComment, ...issueLabelErrors].join('\n')

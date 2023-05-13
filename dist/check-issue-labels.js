@@ -35,7 +35,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkIssueLabels = void 0;
 const core = __importStar(require("@actions/core"));
 const check_linked_issue_labels_1 = require("./check-linked-issue-labels");
-function checkIssueLabels(client, pull, requiredLabels) {
+function checkIssueLabels(client, locator, requiredLabels) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!requiredLabels.length) {
             return [];
@@ -43,28 +43,29 @@ function checkIssueLabels(client, pull, requiredLabels) {
         try {
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             const result = (yield client.graphql(`
-    query ($pull: Int!) {
-    repository(name: "template-typescript-node-package", owner: "JoshuaKGoldberg") {
-      pullRequest(number: $pull) {
-        closingIssuesReferences(first: 100) {
-          edges {
-            node {
-              labels(first: 100) {
+        query ($owner: String!, $pull: Int!, $repo: String!) {
+          repository(name: $repo, owner: $owner) {
+            pullRequest(number: $pull) {
+              closingIssuesReferences(first: 100) {
                 edges {
                   node {
-                    name
+                    labels(first: 100) {
+                      edges {
+                        node {
+                          name
+                        }
+                      }
+                    }
+                    number
                   }
                 }
               }
             }
           }
-          number
         }
-      }
-    }
-  }`, { pull }));
+      `, { owner: locator.owner, pull: locator.pull, repo: locator.repo }));
             core.debug(`Received from GraphQL: ${JSON.stringify(result)}`);
-            return (0, check_linked_issue_labels_1.checkLinkedIssueLabels)(result, requiredLabels);
+            return (0, check_linked_issue_labels_1.checkLinkedIssueLabels)(result.repository.pullRequest.closingIssuesReferences.edges, requiredLabels);
         }
         catch (error) {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions

@@ -1,13 +1,12 @@
-import {QueryResult} from './check-issue-labels'
+import type {ClosingIssueReferenceEdge} from './check-issue-labels'
 
 export function checkLinkedIssueLabels(
-  result: QueryResult,
+  edges: ClosingIssueReferenceEdge[],
   requiredLabels: string[]
 ) {
   const errors: string[] = []
 
-  for (const issueEdge of result.data.repository.pullRequest
-    .closingIssuesReferences.edges) {
+  for (const issueEdge of edges) {
     const issueLabels = new Set(
       issueEdge.node.labels.edges.map(labelEdge => labelEdge.node.name)
     )
@@ -24,9 +23,13 @@ export function checkLinkedIssueLabels(
 
 function formatError(issue: number, labels: string[]) {
   return [
-    'Missing required label',
+    '- Missing required label',
     labels.length > 1 ? 's' : '',
-    ` on issue ${issue}: `,
-    labels.join(', ')
+    ` on issue #${issue}: `,
+    labels.map(wrapWithTick).join(', ')
   ].join('')
+}
+
+function wrapWithTick(text: string) {
+  return `\`${text}\``
 }
