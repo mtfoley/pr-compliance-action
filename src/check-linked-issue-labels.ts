@@ -1,12 +1,12 @@
 import type {ClosingIssueReferenceEdge} from './check-issue-labels'
 
 export function checkLinkedIssueLabels(
-  edges: ClosingIssueReferenceEdge[],
+  issueEdges: ClosingIssueReferenceEdge[],
   requiredLabels: string[]
 ) {
   const errors: string[] = []
 
-  for (const issueEdge of edges) {
+  for (const issueEdge of issueEdges) {
     const issueLabels = new Set(
       issueEdge.node.labels.edges.map(labelEdge => labelEdge.node.name)
     )
