@@ -112,7 +112,7 @@ async function run(): Promise<void> {
     // Set Output values
     core.setOutput('body-check', bodyCheck)
     core.setOutput('branch-check', branchCheck)
-    core.setOutput('issue-check', !!issueLabelErrors.length)
+    core.setOutput('issue-label-check', !!issueLabelErrors.length)
     core.setOutput('title-check', titleCheck)
     core.setOutput('watched-files-check', filesFlagged.length === 0)
     const commentsToLeave = []
@@ -195,7 +195,7 @@ function escapeChecks(checkResult: boolean, message: string) {
   core.info(message)
   core.setOutput('body-check', checkResult)
   core.setOutput('branch-check', checkResult)
-  core.setOutput('issue-check', checkResult)
+  core.setOutput('issue-label-check', checkResult)
   core.setOutput('title-check', checkResult)
   core.setOutput('watched-files-check', checkResult)
 }

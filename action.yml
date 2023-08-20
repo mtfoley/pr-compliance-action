@@ -54,7 +54,7 @@ inputs:
     description: 'Comment to leave on PR on failed check of PR Body'
     default: >
       ## Issue Reference
-      
+
       In order to be considered for merging, the pull request description must refer to a 
       specific issue number. This is described in our Contributing Guide. We are closing this 
       pull request for now but you can update the pull request description and reopen the pull 
@@ -93,7 +93,7 @@ inputs:
     description: 'Comment to leave on PR on failed check of PR head branch.'
     default: >
       ## Protected Branch
-      
+
       In order to be considered for merging, the pull request changes must 
       not be implemented on the "%branch%" branch. This is described in our Contributing Guide. 
       We are closing this pull request and we would suggest that you implement your changes as 
@@ -102,12 +102,12 @@ inputs:
     required: true
     description: 'Whether or not to lint PR title per [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)'
     default: true
-  title-comment: 
+  title-comment:
     required: true
     description: 'Comment to leave on PR on failed check of PR title per [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)'
     default: >
       ## Conventional Commit PR Title
-      
+
       In order to be considered for merging, the pull request title must match the specification in 
       [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/). You can edit
       the title in order for this check to pass.
@@ -117,7 +117,7 @@ inputs:
       - docs: correct typo in README
 
       - feat: implement dark mode"
-      
+
       - fix: correct remove button behavior
   watch-files:
     required: true
@@ -128,14 +128,14 @@ inputs:
     description: 'Comment to leave on PR when watched files have been changed.'
     default: >
       ## Watched Files
-      
+
       This pull request modifies specific files that require careful review by the maintainers.
 outputs:
   body-check:
     description: 'Result of match for PR Body against configured regex.'
   branch-check:
     description: 'Result of check to ensure PR head is not protected branch.'
-  issue-check:
+  issue-label-check:
     description: 'Result of check to ensure linked issue has required labels.'
   title-check:
     description: 'Result of check to ensure PR title is formatted per [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)'
