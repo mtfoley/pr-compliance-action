@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {context} from '@actions/github/lib/utils'
 import {checkBody, checkTitle, checkBranch} from './checks'
+import {checkIssueLabels} from './check-issue-labels'
 
 type PullRequestReview = {
   id: number
@@ -23,6 +24,9 @@ const bodyFail = core.getBooleanInput('body-fail')
 const bodyRegexInput = core.getInput('body-regex')
 const bodyAutoClose = core.getBooleanInput('body-auto-close')
 const bodyComment = core.getInput('body-comment')
+const issueLabels = core.getMultilineInput('issue-labels')
+const issueLabelsAutoClose = core.getBooleanInput('issue-labels-auto-close')
+const issueLabelsComment = core.getInput('issue-labels-comment')
 let protectedBranch = core.getInput('protected-branch')
 const protectedBranchAutoClose = core.getBooleanInput(
   'protected-branch-auto-close'
@@ -79,6 +83,15 @@ async function run(): Promise<void> {
     const filesModified = await listFiles({...pr, pull_number: pr.number})
     // bodyCheck passes if the author is to be ignored or if the check function passes
     const bodyCheck = checkBody(body, bodyRegexInput)
+    const issueLabelErrors = await checkIssueLabels(
+      client,
+      {
+        owner: pr.owner,
+        pull: pr.number,
+        repo: pr.repo
+      },
+      issueLabels
+    )
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
       : await checkTitle(title)
@@ -87,13 +100,19 @@ async function run(): Promise<void> {
       .map(file => file.filename)
       .filter(filename => filesToWatch.includes(filename))
     const prCompliant =
-      bodyCheck && titleCheck && branchCheck && filesFlagged.length === 0
+      bodyCheck &&
+      issueLabelErrors.length === 0 &&
+      titleCheck &&
+      branchCheck &&
+      filesFlagged.length === 0
     const shouldClosePr =
       (bodyCheck === false && bodyAutoClose === true) ||
-      (branchCheck === false && protectedBranchAutoClose === true)
+      (branchCheck === false && protectedBranchAutoClose === true) ||
+      (!!issueLabelErrors.length && issueLabelsAutoClose === true)
     // Set Output values
     core.setOutput('body-check', bodyCheck)
     core.setOutput('branch-check', branchCheck)
+    core.setOutput('issue-label-check', !!issueLabelErrors.length)
     core.setOutput('title-check', titleCheck)
     core.setOutput('watched-files-check', filesFlagged.length === 0)
     const commentsToLeave = []
@@ -117,6 +136,12 @@ async function run(): Promise<void> {
           commentsToLeave.push(
             protectedBranchComment.replace(branchCommentRegex, protectedBranch)
           )
+      }
+      if (issueLabelErrors.length > 0) {
+        core.setFailed(`This PR's linked issues are missing required labels.`)
+        commentsToLeave.push(
+          [issueLabelsComment, ...issueLabelErrors].join('\n')
+        )
       }
       if (!titleCheck) {
         core.setFailed(
@@ -170,6 +195,7 @@ function escapeChecks(checkResult: boolean, message: string) {
   core.info(message)
   core.setOutput('body-check', checkResult)
   core.setOutput('branch-check', checkResult)
+  core.setOutput('issue-label-check', checkResult)
   core.setOutput('title-check', checkResult)
   core.setOutput('watched-files-check', checkResult)
 }
