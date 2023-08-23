@@ -13,6 +13,11 @@ function createFakeQueryResults(...issuesLabels: string[][]) {
 }
 
 describe('checkLinkedIssueLabels', () => {
+  it('passes when no required labels are present', () => {
+    const check = checkLinkedIssueLabels(createFakeQueryResults(['yolo']), [])
+    expect(check).toEqual([])
+  })
+
   it('fails when one of one required label is missing', () => {
     const check = checkLinkedIssueLabels(
       createFakeQueryResults(['unrelated']),
