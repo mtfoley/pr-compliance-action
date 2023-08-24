@@ -89,3 +89,4 @@ body-check | Result of match for PR Body against configured regex.
 branch-check | Result of check to ensure PR head is not protected branch.
 title-check | Result of check to ensure PR title is formatted per [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 watch-files-check | Result of check for watched files having been modified. True if no modifications found to watched files.
+review-comment | The pull request review comment that the action will attempt to create/update.
