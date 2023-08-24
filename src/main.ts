@@ -188,6 +188,7 @@ async function run(): Promise<void> {
       // Finally close PR if warranted
       if (shouldClosePr) await closePullRequest(pr.number)
     } else {
+      core.setOutput('review-comment', '')
       await updateReview(
         {owner: pr.owner, repo: pr.repo, pull_number: pr.number},
         ''
