@@ -49,6 +49,16 @@ const titleCheckEnable = core.getBooleanInput('title-check-enable')
 const filesToWatch = core.getMultilineInput('watch-files')
 const watchedFilesComment = core.getInput('watch-files-comment')
 const client = github.getOctokit(repoToken)
+const handleError = (originalError: Error, message: string | undefined) => {
+  if (!message) {
+    throw originalError
+    return
+  }
+  const niceError = new Error(`${message} Error: ${originalError.message}`)
+  niceError.stack = originalError.stack || ''
+  throw niceError
+  return
+}
 async function run(): Promise<void> {
   try {
     const ctx = github.context
@@ -206,7 +216,7 @@ async function closePullRequest(number: number) {
       state: 'closed'
     })
   } catch (error) {
-    if (error instanceof Error) throw new Error(errors.closingPullRequest)
+    handleError(error as Error, errors.closingPullRequest)
   }
 }
 function escapeChecks(checkResult: boolean, message: string) {
@@ -227,7 +237,7 @@ async function listFiles(pullRequest: {
     const {data: files} = await client.rest.pulls.listFiles(pullRequest)
     return files
   } catch (error) {
-    if (error instanceof Error) throw new Error(errors.findExistingReview)
+    handleError(error as Error, errors.findExistingReview)
     return []
   }
 }
@@ -267,7 +277,7 @@ async function updateReview(
         event: 'COMMENT'
       })
     } catch (error) {
-      if (error instanceof Error) throw new Error(errors.creatingReview)
+      handleError(error as Error, errors.creatingReview)
       return
     }
   }
@@ -280,7 +290,7 @@ async function updateReview(
         body: 'PR Compliance Checks Passed!'
       })
     } catch (error) {
-      if (error instanceof Error) throw new Error(errors.updatingReview)
+      handleError(error as Error, errors.updatingReview)
       return
     }
   }
@@ -293,7 +303,7 @@ async function updateReview(
         body
       })
     } catch (error) {
-      if (error instanceof Error) throw new Error(errors.updatingReview)
+      handleError(error as Error, errors.updatingReview)
       return
     }
   }
@@ -311,7 +321,7 @@ async function userIsTeamMember(
       return userOrg.login === owner
     })
   } catch (error) {
-    if (error instanceof Error) throw new Error(errors.checkingTeamMember)
+    handleError(error as Error, errors.checkingTeamMember)
     return false
   }
 }

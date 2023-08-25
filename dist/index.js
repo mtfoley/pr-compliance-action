@@ -278,6 +278,16 @@ const titleCheckEnable = core.getBooleanInput('title-check-enable');
 const filesToWatch = core.getMultilineInput('watch-files');
 const watchedFilesComment = core.getInput('watch-files-comment');
 const client = github.getOctokit(repoToken);
+const handleError = (originalError, message) => {
+    if (!message) {
+        throw originalError;
+        return;
+    }
+    const niceError = new Error(`${message} Error: ${originalError.message}`);
+    niceError.stack = originalError.stack || '';
+    throw niceError;
+    return;
+};
 function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
     return __awaiter(this, void 0, void 0, function* () {
@@ -391,6 +401,7 @@ function run() {
                     yield closePullRequest(pr.number);
             }
             else {
+                core.setOutput('review-comment', '');
                 yield updateReview({ owner: pr.owner, repo: pr.repo, pull_number: pr.number }, '');
             }
         }
@@ -406,8 +417,7 @@ function closePullRequest(number) {
             yield client.rest.pulls.update(Object.assign(Object.assign({}, utils_1.context.repo), { pull_number: number, state: 'closed' }));
         }
         catch (error) {
-            if (error instanceof Error)
-                throw new Error(errors.closingPullRequest);
+            handleError(error, errors.closingPullRequest);
         }
     });
 }
@@ -427,8 +437,7 @@ function listFiles(pullRequest) {
             return files;
         }
         catch (error) {
-            if (error instanceof Error)
-                throw new Error(errors.findExistingReview);
+            handleError(error, errors.findExistingReview);
             return [];
         }
     });
@@ -468,8 +477,7 @@ function updateReview(pullRequest, body) {
                 yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: 'COMMENT' }));
             }
             catch (error) {
-                if (error instanceof Error)
-                    throw new Error(errors.creatingReview);
+                handleError(error, errors.creatingReview);
                 return;
             }
         }
@@ -479,8 +487,7 @@ function updateReview(pullRequest, body) {
                 yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' }));
             }
             catch (error) {
-                if (error instanceof Error)
-                    throw new Error(errors.updatingReview);
+                handleError(error, errors.updatingReview);
                 return;
             }
         }
@@ -490,8 +497,7 @@ function updateReview(pullRequest, body) {
                 yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body }));
             }
             catch (error) {
-                if (error instanceof Error)
-                    throw new Error(errors.updatingReview);
+                handleError(error, errors.updatingReview);
                 return;
             }
         }
@@ -510,8 +516,7 @@ function userIsTeamMember(login, owner) {
             });
         }
         catch (error) {
-            if (error instanceof Error)
-                throw new Error(errors.checkingTeamMember);
+            handleError(error, errors.checkingTeamMember);
             return false;
         }
     });
