@@ -246,6 +246,7 @@ async function findExistingReview(pullRequest: {
   repo: string
   pull_number: number
 }): Promise<PullRequestReview | null> {
+  core.debug(JSON.stringify({function: 'findExistingReview', pullRequest}))
   try {
     let review
     const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
@@ -263,6 +264,7 @@ async function updateReview(
   pullRequest: {owner: string; repo: string; pull_number: number},
   body: string
 ) {
+  core.debug(JSON.stringify({function: 'updateReview', pullRequest, body}))
   const review = await findExistingReview(pullRequest)
   // if blank body and no existing review, exit
   if (body === '' && review === null) return

@@ -444,6 +444,7 @@ function listFiles(pullRequest) {
 }
 function findExistingReview(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug(JSON.stringify({ function: "findExistingReview", pullRequest }));
         try {
             let review;
             const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
@@ -464,6 +465,7 @@ function findExistingReview(pullRequest) {
 }
 function updateReview(pullRequest, body) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug(JSON.stringify({ function: "updateReview", pullRequest, body }));
         const review = yield findExistingReview(pullRequest);
         // if blank body and no existing review, exit
         if (body === '' && review === null)
