@@ -285,7 +285,6 @@ async function updateReview(
   }
   // if body blank and review exists, update it to show passed
   if (review !== null && body === '') {
-    core.debug("Non-blank review, blank body. "+JSON.stringify(review))
     try {
       await client.rest.pulls.updateReview({
         ...pullRequest,
@@ -293,13 +292,17 @@ async function updateReview(
         body: 'PR Compliance Checks Passed!'
       })
     } catch (error) {
+      core.debug("Non-blank review, blank body. "+JSON.stringify({
+        ...pullRequest,
+        review_id: review.id,
+        body: 'PR Compliance Checks Passed!'
+      }))
       handleError(error as Error, errors.updatingReview)
       return
     }
   }
   // if body non-blank and review exists, update it
   if (review !== null && body !== review?.body) {
-    core.debug("Non-blank review, different body. "+JSON.stringify(review))
     try {
       await client.rest.pulls.updateReview({
         ...pullRequest,
@@ -307,6 +310,11 @@ async function updateReview(
         body
       })
     } catch (error) {
+      core.debug("Non-blank review, different body. "+JSON.stringify({
+        ...pullRequest,
+        review_id: review.id,
+        body
+      }))
       handleError(error as Error, errors.updatingReview)
       return
     }
