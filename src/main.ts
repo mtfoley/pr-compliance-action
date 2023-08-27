@@ -299,9 +299,7 @@ async function updateReview(
       handleError(error as Error, errors.updatingReview)
       return
     }
-  }
-  // if body non-blank and review exists, update it
-  if (review !== null && body !== review?.body) {
+  } else if (review !== null && body !== review?.body) {
     const payload = {
       ...pullRequest,
       review_id: review.id,

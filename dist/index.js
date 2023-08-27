@@ -497,8 +497,7 @@ function updateReview(pullRequest, body) {
                 return;
             }
         }
-        // if body non-blank and review exists, update it
-        if (review !== null && body !== (review === null || review === void 0 ? void 0 : review.body)) {
+        else if (review !== null && body !== (review === null || review === void 0 ? void 0 : review.body)) {
             const payload = Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body });
             try {
                 yield client.rest.pulls.updateReview(payload);
