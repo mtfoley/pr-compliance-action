@@ -114,6 +114,9 @@ async function run(): Promise<void> {
       },
       issueLabels
     )
+    core.debug(
+      JSON.stringify({issueLabelErrors, check: !!issueLabelErrors.length})
+    )
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
       : await checkTitle(title)

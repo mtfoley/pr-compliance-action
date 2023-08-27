@@ -328,6 +328,7 @@ function run() {
                 pull: pr.number,
                 repo: pr.repo
             }, issueLabels);
+            core.debug(JSON.stringify({ issueLabelErrors, check: !!issueLabelErrors.length }));
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
