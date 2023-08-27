@@ -188,6 +188,7 @@ async function run(): Promise<void> {
       }
       // Update Review as needed
       let reviewBody = ''
+      core.debug(JSON.stringify({commentsToLeave}))
       if (commentsToLeave.length > 0)
         reviewBody = [baseComment, ...commentsToLeave].join('\n\n')
       core.setOutput('review-comment', reviewBody)
@@ -271,6 +272,7 @@ async function updateReview(
   // if review body same as new body, exit
   if (body === review?.body) return
   // if no existing review, body non blank, create a review
+  core.debug(JSON.stringify({function: 'updateReview', review, body}))
   if (review === null && body !== '') {
     try {
       await client.rest.pulls.createReview({
@@ -285,36 +287,30 @@ async function updateReview(
   }
   // if body blank and review exists, update it to show passed
   if (review !== null && body === '') {
+    const payload = {
+      ...pullRequest,
+      review_id: review.id,
+      body: 'PR Compliance Checks Passed!'
+    }
     try {
-      await client.rest.pulls.updateReview({
-        ...pullRequest,
-        review_id: review.id,
-        body: 'PR Compliance Checks Passed!'
-      })
+      await client.rest.pulls.updateReview(payload)
     } catch (error) {
-      core.debug("Non-blank review, blank body. "+JSON.stringify({
-        ...pullRequest,
-        review_id: review.id,
-        body: 'PR Compliance Checks Passed!'
-      }))
+      core.debug(`Non-blank review, blank body. ${JSON.stringify(payload)}`)
       handleError(error as Error, errors.updatingReview)
       return
     }
   }
   // if body non-blank and review exists, update it
   if (review !== null && body !== review?.body) {
+    const payload = {
+      ...pullRequest,
+      review_id: review.id,
+      body
+    }
     try {
-      await client.rest.pulls.updateReview({
-        ...pullRequest,
-        review_id: review.id,
-        body
-      })
+      await client.rest.pulls.updateReview(payload)
     } catch (error) {
-      core.debug("Non-blank review, different body. "+JSON.stringify({
-        ...pullRequest,
-        review_id: review.id,
-        body
-      }))
+      core.debug(`Non-blank review, different body. ${JSON.stringify(payload)}`)
       handleError(error as Error, errors.updatingReview)
       return
     }

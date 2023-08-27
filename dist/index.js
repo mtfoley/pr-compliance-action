@@ -392,6 +392,7 @@ function run() {
                 }
                 // Update Review as needed
                 let reviewBody = '';
+                core.debug(JSON.stringify({ commentsToLeave }));
                 if (commentsToLeave.length > 0)
                     reviewBody = [baseComment, ...commentsToLeave].join('\n\n');
                 core.setOutput('review-comment', reviewBody);
@@ -444,7 +445,7 @@ function listFiles(pullRequest) {
 }
 function findExistingReview(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug(JSON.stringify({ function: "findExistingReview", pullRequest }));
+        core.debug(JSON.stringify({ function: 'findExistingReview', pullRequest }));
         try {
             let review;
             const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
@@ -465,7 +466,7 @@ function findExistingReview(pullRequest) {
 }
 function updateReview(pullRequest, body) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.debug(JSON.stringify({ function: "updateReview", pullRequest, body }));
+        core.debug(JSON.stringify({ function: 'updateReview', pullRequest, body }));
         const review = yield findExistingReview(pullRequest);
         // if blank body and no existing review, exit
         if (body === '' && review === null)
@@ -474,6 +475,7 @@ function updateReview(pullRequest, body) {
         if (body === (review === null || review === void 0 ? void 0 : review.body))
             return;
         // if no existing review, body non blank, create a review
+        core.debug(JSON.stringify({ function: 'updateReview', review, body }));
         if (review === null && body !== '') {
             try {
                 yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: 'COMMENT' }));
@@ -485,20 +487,24 @@ function updateReview(pullRequest, body) {
         }
         // if body blank and review exists, update it to show passed
         if (review !== null && body === '') {
+            const payload = Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' });
             try {
-                yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' }));
+                yield client.rest.pulls.updateReview(payload);
             }
             catch (error) {
+                core.debug(`Non-blank review, blank body. ${JSON.stringify(payload)}`);
                 handleError(error, errors.updatingReview);
                 return;
             }
         }
         // if body non-blank and review exists, update it
         if (review !== null && body !== (review === null || review === void 0 ? void 0 : review.body)) {
+            const payload = Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body });
             try {
-                yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body }));
+                yield client.rest.pulls.updateReview(payload);
             }
             catch (error) {
+                core.debug(`Non-blank review, different body. ${JSON.stringify(payload)}`);
                 handleError(error, errors.updatingReview);
                 return;
             }
