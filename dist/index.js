@@ -281,12 +281,10 @@ const client = github.getOctokit(repoToken);
 const handleError = (originalError, message) => {
     if (!message) {
         throw originalError;
-        return;
     }
     const niceError = new Error(`${message} Error: ${originalError.message}`);
     niceError.stack = originalError.stack || '';
     throw niceError;
-    return;
 };
 function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
@@ -480,6 +478,7 @@ function updateReview(pullRequest, body) {
         if (review === null && body !== '') {
             try {
                 yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: 'COMMENT' }));
+                return;
             }
             catch (error) {
                 handleError(error, errors.creatingReview);
@@ -491,20 +490,20 @@ function updateReview(pullRequest, body) {
             const payload = Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' });
             try {
                 yield client.rest.pulls.updateReview(payload);
+                return;
             }
             catch (error) {
-                core.debug(`Non-blank review, blank body. ${JSON.stringify(payload)}`);
                 handleError(error, errors.updatingReview);
                 return;
             }
         }
-        else if (review !== null && body !== (review === null || review === void 0 ? void 0 : review.body)) {
+        if (review !== null && body !== (review === null || review === void 0 ? void 0 : review.body)) {
             const payload = Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body });
             try {
                 yield client.rest.pulls.updateReview(payload);
+                return;
             }
             catch (error) {
-                core.debug(`Non-blank review, different body. ${JSON.stringify(payload)}`);
                 handleError(error, errors.updatingReview);
                 return;
             }

@@ -52,12 +52,10 @@ const client = github.getOctokit(repoToken)
 const handleError = (originalError: Error, message: string | undefined) => {
   if (!message) {
     throw originalError
-    return
   }
   const niceError = new Error(`${message} Error: ${originalError.message}`)
   niceError.stack = originalError.stack || ''
   throw niceError
-  return
 }
 async function run(): Promise<void> {
   try {
@@ -283,6 +281,7 @@ async function updateReview(
         body,
         event: 'COMMENT'
       })
+      return
     } catch (error) {
       handleError(error as Error, errors.creatingReview)
       return
@@ -297,12 +296,13 @@ async function updateReview(
     }
     try {
       await client.rest.pulls.updateReview(payload)
+      return
     } catch (error) {
-      core.debug(`Non-blank review, blank body. ${JSON.stringify(payload)}`)
       handleError(error as Error, errors.updatingReview)
       return
     }
-  } else if (review !== null && body !== review?.body) {
+  }
+  if (review !== null && body !== review?.body) {
     const payload = {
       ...pullRequest,
       review_id: review.id,
@@ -310,8 +310,8 @@ async function updateReview(
     }
     try {
       await client.rest.pulls.updateReview(payload)
+      return
     } catch (error) {
-      core.debug(`Non-blank review, different body. ${JSON.stringify(payload)}`)
       handleError(error as Error, errors.updatingReview)
       return
     }
