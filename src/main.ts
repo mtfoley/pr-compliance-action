@@ -285,6 +285,7 @@ async function updateReview(
   }
   // if body blank and review exists, update it to show passed
   if (review !== null && body === '') {
+    core.debug("Non-blank review, blank body. "+JSON.stringify(review))
     try {
       await client.rest.pulls.updateReview({
         ...pullRequest,
@@ -298,6 +299,7 @@ async function updateReview(
   }
   // if body non-blank and review exists, update it
   if (review !== null && body !== review?.body) {
+    core.debug("Non-blank review, different body. "+JSON.stringify(review))
     try {
       await client.rest.pulls.updateReview({
         ...pullRequest,
