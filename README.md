@@ -24,6 +24,10 @@ on:
 # Action should have write permission to make updates to PR
 permissions:
   pull-requests: write
+  # Uncomment the line below if using the `issue-labels`
+  # option on a private repository.
+
+  # issues: read
 
 jobs:
   pr-compliance:
@@ -35,6 +39,8 @@ jobs:
           watch-files: |
             package.json
             npm-shrinkwrap.json
+          issue-labels: |
+            accepting prs
 ```
 
 ## Behavior
@@ -64,7 +70,7 @@ body-regex | `(fix(es\|ed)?\|((resolve\|close)(s\|d)?)) #\d*[1-9]\d*` | Regular 
 body-fail | false | Whether to trigger a failing check when the body-regex is not matched in the PR body. Triggers a warning by default.
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
-issue-labels | (Blank) | List of labels that must exist on all issues linked to a PR.
+issue-labels | (Blank) | List of labels that must exist on all issues linked to a PR[^4].
 issue-labels-auto-close | true | Whether to auto-close on failed check of issue labels.
 issue-labels-comment | (see [action.yml](./action.yml)) | Comment to leave on PR when issue labels are missing.
 protected-branch | (Blank) | Branch that check should ensure that PR does not use as it's head. If left blank, it falls back to default branch.
@@ -78,6 +84,7 @@ watch-files-comment | (see [action.yml](./action.yml)) | Comment to leave on PR 
 [^1]: In a case where a contributor has a private membership to the org, the `ignore-authors` may be used to skip checks - however, this workflow file configuration could effectively make membership public.
 [^2]: Default regular expression is based on [linking to an issue using a keyword](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword). To keep PRs related to issues within the same same repo, we use the `KEYWORD #ISSUE-NUMBER` syntax. However, one could also use a regular expression like `(fix(es|ed)?|((resolve|close)(s|d)?)) (my-org)\/([a-z0-9\-_]*)#\d*[1-9]\d*`
 [^3]: The body check can be configured to always pass by using a sufficiently generic regex, e.g. `.*`, that will  match any PR description.
+[^4]: The issue labels check needs read permissions for issues to see what labels are on the linked issues for the PR. For public repositories, the workflow file should not need any adjustment. For private repositories, the workflow file will need to have the `issues: read` permission added if any issue labels are specified as required.
 
 ## Outputs
 
