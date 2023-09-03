@@ -28,7 +28,7 @@
     "@actions/core": "^1.10.0",
     "@actions/github": "^5.1.1",
     "@octokit/core": "^4.2.0",
-    "conventional-changelog-conventionalcommits": "^5.0.0",
+    "conventional-changelog-conventionalcommits": "^7.0.1",
     "conventional-commit-types": "^3.0.0",
     "conventional-commits-parser": "^3.2.4"
   },
