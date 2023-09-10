@@ -135,7 +135,7 @@ async function run(): Promise<void> {
     // Set Output values
     core.setOutput('body-check', bodyCheck)
     core.setOutput('branch-check', branchCheck)
-    core.setOutput('issue-label-check', !!issueLabelErrors.length)
+    core.setOutput('issue-label-check', issueLabelErrors.length === 0)
     core.setOutput('title-check', titleCheck)
     core.setOutput('watched-files-check', filesFlagged.length === 0)
     const commentsToLeave = []
