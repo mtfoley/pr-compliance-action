@@ -14,6 +14,8 @@ No issue, just passing thru.
 `
 const goodBody =
   '# Fix for lint error\n\nThis PR fixes #123\n\nNo post-deploy tasks.'
+const goodBodyWithLink =
+  '# Fix for lint error\n\nThis PR fixes https://github.com/mtfoley/pr-compliance-action/issues/384\n\nNo post-deploy tasks.'
 test('checkBody false on empty', () => {
   const regexString = '(fixes|closes) #d+'
   const check = checkBody('', regexString)
@@ -32,6 +34,11 @@ test('checkBody false when valid issue reference is inside comment', () => {
 test('checkBody true on valid message with multiline', () => {
   const regexString = '(fixes|closes) #\\d+'
   const check = checkBody(goodBody, regexString)
+  expect(check).toBeTruthy()
+})
+test('checkBody true on valid message with issue link', () => {
+  const regexString = '(fixes|closes) (https:\/\/github\.com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+\/issues\/\d+)'
+  const check = checkBody(goodBodyWithLink, regexString)
   expect(check).toBeTruthy()
 })
 test('checkTitle false on empty', async () => {
