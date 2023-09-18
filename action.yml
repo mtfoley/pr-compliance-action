@@ -39,7 +39,7 @@ inputs:
   body-regex:
     required: true
     description: 'PR Body Regex'
-    default: '(fix(es|ed)?|((resolve|close)(s|d)?)) (https:\/\/github\.com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+\/issues\/\d+)?|(#\d*[1-9]\d*?)'
+    default: '(fix(es|ed)?|((resolve|close)(s|d)?)) ((https:\/\/github.com\/[a-zA-Z0-9-_]+\/[a-zA-Z0-9-_]+\/issues\/d*[1-9]d*?)|(#d*[1-9]d*?))'
   body-fail:
     required: true
     description: >

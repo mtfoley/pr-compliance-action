@@ -40,13 +40,15 @@ test('checkBody true on valid message with multiline', () => {
   expect(check).toBeTruthy()
 })
 test('checkBody true on valid message with issue link', () => {
-  const regexString = '(fixes|closes) (https:\/\/github\.com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+\/issues\/\d+)'
+  const regexString =
+    '(fix(es|ed)?|((resolve|close)(s|d)?)) ((https://github.com/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/issues/d*[1-9]d*?)|(#d*[1-9]d*?))'
   const check = checkBody(goodBodyWithLink, regexString)
   expect(check).toBeTruthy()
 })
-test('checkBody true on valid message with issue link', () => {
-  const regexString = '(fixes|closes) (https:\/\/github\.com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+\/issues\/\d+)'
-  const check = checkBody(goodBodyWithLink, regexString)
+test('checkBody false on flase positive with link', () => {
+  const regexString =
+    '(fix(es|ed)?|((resolve|close)(s|d)?)) ((https://github.com/[a-zA-Z0-9-_]+/[a-zA-Z0-9-_]+/issues/d*[1-9]d*?)|(#d*[1-9]d*?))'
+  const check = checkBody(badBodyWithLink, regexString)
   expect(check).toBeFalsy()
 })
 test('checkTitle false on empty', async () => {
