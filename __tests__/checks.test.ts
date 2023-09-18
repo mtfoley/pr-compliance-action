@@ -16,6 +16,9 @@ const goodBody =
   '# Fix for lint error\n\nThis PR fixes #123\n\nNo post-deploy tasks.'
 const goodBodyWithLink =
   '# Fix for lint error\n\nThis PR fixes https://github.com/mtfoley/pr-compliance-action/issues/384\n\nNo post-deploy tasks.'
+const badBodyWithLink =
+  '# Fix for lint error\n\nThis PR fixes https://opensauced.pizza/bdougie/oven/issues/384\n\nanother fun project!.'
+
 test('checkBody false on empty', () => {
   const regexString = '(fixes|closes) #d+'
   const check = checkBody('', regexString)
@@ -40,6 +43,11 @@ test('checkBody true on valid message with issue link', () => {
   const regexString = '(fixes|closes) (https:\/\/github\.com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+\/issues\/\d+)'
   const check = checkBody(goodBodyWithLink, regexString)
   expect(check).toBeTruthy()
+})
+test('checkBody true on valid message with issue link', () => {
+  const regexString = '(fixes|closes) (https:\/\/github\.com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+\/issues\/\d+)'
+  const check = checkBody(goodBodyWithLink, regexString)
+  expect(check).toBeFalsy()
 })
 test('checkTitle false on empty', async () => {
   const {valid, errors} = await checkTitle('')
