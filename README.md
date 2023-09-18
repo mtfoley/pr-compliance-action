@@ -66,7 +66,7 @@ repo-token | `secrets.GITHUB_TOKEN` | Access token for which this action will ru
 ignore-authors | dependabot<br/>dependabot[bot] | If the action detects that the PR author is one of these logins, it will skip checks and set all outputs to `true`.
 base-comment | (see [action.yml](./action.yml)) | Preamble to any comment the action leaves on the PR.
 ignore-team-members | true | Whether to ignore in the case that the PR author is a) the owner of repository, or b) has a public membership[^1] in the org that owns the repository.
-body-regex | `(fix(es|ed)?|((resolve|close)(s|d)?)) (https:\/\/github\.com\/[a-zA-Z0-9\-_]+\/[a-zA-Z0-9\-_]+\/issues\/\d+)?|(#\d*[1-9]\d*?)` | Regular expression to identify whether the PR body refers to an issue[^2][^3].
+body-regex | (see [action.yml](./action.yml)) | Regular expression to identify whether the PR body refers to an issue[^2][^3].
 body-fail | false | Whether to trigger a failing check when the body-regex is not matched in the PR body. Triggers a warning by default.
 body-auto-close | true | Whether or not to auto-close on failed check of PR Body
 body-comment | (see [action.yml](./action.yml)) | Comment to leave on PR on failed check of PR Body
