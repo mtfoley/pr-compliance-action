@@ -16,6 +16,18 @@ type PullRequestReview = {
   state: string
 }
 
+const errors = {
+  findExistingReview:
+    'An error was encountered when searching for a pull request review comment previously left by this action.',
+  checkingTeamMember:
+    'An error was encountered when checking whether the PR author is a team member.',
+  updatingReview:
+    'An error was encountered when updating a pull request review comment previously left by this action.',
+  creatingReview:
+    'An error was encountered when creating a pull request review comment.',
+  closingPullRequest: 'An error was encountered when closing the pull request.'
+}
+
 const repoToken = core.getInput('repo-token')
 const ignoreAuthors = core.getMultilineInput('ignore-authors')
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members')
@@ -37,6 +49,14 @@ const titleCheckEnable = core.getBooleanInput('title-check-enable')
 const filesToWatch = core.getMultilineInput('watch-files')
 const watchedFilesComment = core.getInput('watch-files-comment')
 const client = github.getOctokit(repoToken)
+const handleError = (originalError: Error, message: string | undefined) => {
+  if (!message) {
+    throw originalError
+  }
+  const niceError = new Error(`${message} Error: ${originalError.message}`)
+  niceError.stack = originalError.stack || ''
+  throw niceError
+}
 async function run(): Promise<void> {
   try {
     const ctx = github.context
@@ -91,6 +111,9 @@ async function run(): Promise<void> {
         repo: pr.repo
       },
       issueLabels
+    )
+    core.debug(
+      JSON.stringify({issueLabelErrors, check: !!issueLabelErrors.length})
     )
     const {valid: titleCheck, errors: titleErrors} = !titleCheckEnable
       ? {valid: true, errors: []}
@@ -166,8 +189,10 @@ async function run(): Promise<void> {
       }
       // Update Review as needed
       let reviewBody = ''
+      core.debug(JSON.stringify({commentsToLeave}))
       if (commentsToLeave.length > 0)
         reviewBody = [baseComment, ...commentsToLeave].join('\n\n')
+      core.setOutput('review-comment', reviewBody)
       await updateReview(
         {owner: pr.owner, repo: pr.repo, pull_number: pr.number},
         reviewBody
@@ -175,6 +200,7 @@ async function run(): Promise<void> {
       // Finally close PR if warranted
       if (shouldClosePr) await closePullRequest(pr.number)
     } else {
+      core.setOutput('review-comment', '')
       await updateReview(
         {owner: pr.owner, repo: pr.repo, pull_number: pr.number},
         ''
@@ -185,11 +211,15 @@ async function run(): Promise<void> {
   }
 }
 async function closePullRequest(number: number) {
-  await client.rest.pulls.update({
-    ...context.repo,
-    pull_number: number,
-    state: 'closed'
-  })
+  try {
+    await client.rest.pulls.update({
+      ...context.repo,
+      pull_number: number,
+      state: 'closed'
+    })
+  } catch (error) {
+    handleError(error as Error, errors.closingPullRequest)
+  }
 }
 function escapeChecks(checkResult: boolean, message: string) {
   core.info(message)
@@ -198,72 +228,110 @@ function escapeChecks(checkResult: boolean, message: string) {
   core.setOutput('issue-label-check', checkResult)
   core.setOutput('title-check', checkResult)
   core.setOutput('watched-files-check', checkResult)
+  core.setOutput('review-comment', '')
 }
 async function listFiles(pullRequest: {
   owner: string
   repo: string
   pull_number: number
 }) {
-  const {data: files} = await client.rest.pulls.listFiles(pullRequest)
-  return files
+  try {
+    const {data: files} = await client.rest.pulls.listFiles(pullRequest)
+    return files
+  } catch (error) {
+    handleError(error as Error, errors.findExistingReview)
+    return []
+  }
 }
 async function findExistingReview(pullRequest: {
   owner: string
   repo: string
   pull_number: number
 }): Promise<PullRequestReview | null> {
-  let review
-  const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
-  review = reviews.find(innerReview => {
-    return (innerReview?.user?.login ?? '') === 'github-actions[bot]'
-  })
-  if (review === undefined) review = null
-  return review
+  core.debug(JSON.stringify({function: 'findExistingReview', pullRequest}))
+  try {
+    let review
+    const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
+    review = reviews.find(innerReview => {
+      return (innerReview?.user?.login ?? '') === 'github-actions[bot]'
+    })
+    if (review === undefined) review = null
+    return review
+  } catch (error) {
+    if (error instanceof Error) throw new Error(errors.findExistingReview)
+    return null
+  }
 }
 async function updateReview(
   pullRequest: {owner: string; repo: string; pull_number: number},
   body: string
 ) {
+  core.debug(JSON.stringify({function: 'updateReview', pullRequest, body}))
   const review = await findExistingReview(pullRequest)
   // if blank body and no existing review, exit
   if (body === '' && review === null) return
   // if review body same as new body, exit
   if (body === review?.body) return
   // if no existing review, body non blank, create a review
+  core.debug(JSON.stringify({function: 'updateReview', review, body}))
   if (review === null && body !== '') {
-    await client.rest.pulls.createReview({
-      ...pullRequest,
-      body,
-      event: 'COMMENT'
-    })
-    return
+    try {
+      await client.rest.pulls.createReview({
+        ...pullRequest,
+        body,
+        event: 'COMMENT'
+      })
+      return
+    } catch (error) {
+      handleError(error as Error, errors.creatingReview)
+      return
+    }
   }
   // if body blank and review exists, update it to show passed
   if (review !== null && body === '') {
-    await client.rest.pulls.updateReview({
+    const payload = {
       ...pullRequest,
       review_id: review.id,
       body: 'PR Compliance Checks Passed!'
-    })
-    return
+    }
+    try {
+      await client.rest.pulls.updateReview(payload)
+      return
+    } catch (error) {
+      handleError(error as Error, errors.updatingReview)
+      return
+    }
   }
-  // if body non-blank and review exists, update it
   if (review !== null && body !== review?.body) {
-    await client.rest.pulls.updateReview({
+    const payload = {
       ...pullRequest,
       review_id: review.id,
       body
-    })
-    return
+    }
+    try {
+      await client.rest.pulls.updateReview(payload)
+      return
+    } catch (error) {
+      handleError(error as Error, errors.updatingReview)
+      return
+    }
   }
 }
-async function userIsTeamMember(login: string, owner: string) {
+async function userIsTeamMember(
+  login: string,
+  owner: string
+): Promise<boolean> {
   if (login === owner) return true
-  const {data: userOrgs} = await client.request('GET /users/{user}/orgs', {
-    user: login
-  })
-  return userOrgs.some((userOrg: {login: string}) => {
-    return userOrg.login === owner
-  })
+  try {
+    const {data: userOrgs} = await client.request('GET /users/{user}/orgs', {
+      user: login
+    })
+    return userOrgs.some((userOrg: {login: string}) => {
+      return userOrg.login === owner
+    })
+  } catch (error) {
+    handleError(error as Error, errors.checkingTeamMember)
+    return false
+  }
 }
 run()

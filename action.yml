@@ -141,6 +141,8 @@ outputs:
     description: 'Result of check to ensure PR title is formatted per [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)'
   watch-files-check:
     description: 'Result of check for watched files having been modified. True if no modifications found to watched files.'
+  review-comment:
+    description: 'Pull request review comment that the action will attempt to create/update.'
 runs:
   using: 'node16'
   main: 'dist/index.js'

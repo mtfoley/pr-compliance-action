@@ -252,6 +252,13 @@ const github = __importStar(__nccwpck_require__(5438));
 const utils_1 = __nccwpck_require__(3030);
 const checks_1 = __nccwpck_require__(2321);
 const check_issue_labels_1 = __nccwpck_require__(6810);
+const errors = {
+    findExistingReview: 'An error was encountered when searching for a pull request review comment previously left by this action.',
+    checkingTeamMember: 'An error was encountered when checking whether the PR author is a team member.',
+    updatingReview: 'An error was encountered when updating a pull request review comment previously left by this action.',
+    creatingReview: 'An error was encountered when creating a pull request review comment.',
+    closingPullRequest: 'An error was encountered when closing the pull request.'
+};
 const repoToken = core.getInput('repo-token');
 const ignoreAuthors = core.getMultilineInput('ignore-authors');
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members');
@@ -271,6 +278,14 @@ const titleCheckEnable = core.getBooleanInput('title-check-enable');
 const filesToWatch = core.getMultilineInput('watch-files');
 const watchedFilesComment = core.getInput('watch-files-comment');
 const client = github.getOctokit(repoToken);
+const handleError = (originalError, message) => {
+    if (!message) {
+        throw originalError;
+    }
+    const niceError = new Error(`${message} Error: ${originalError.message}`);
+    niceError.stack = originalError.stack || '';
+    throw niceError;
+};
 function run() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
     return __awaiter(this, void 0, void 0, function* () {
@@ -311,6 +326,7 @@ function run() {
                 pull: pr.number,
                 repo: pr.repo
             }, issueLabels);
+            core.debug(JSON.stringify({ issueLabelErrors, check: !!issueLabelErrors.length }));
             const { valid: titleCheck, errors: titleErrors } = !titleCheckEnable
                 ? { valid: true, errors: [] }
                 : yield (0, checks_1.checkTitle)(title);
@@ -375,14 +391,17 @@ function run() {
                 }
                 // Update Review as needed
                 let reviewBody = '';
+                core.debug(JSON.stringify({ commentsToLeave }));
                 if (commentsToLeave.length > 0)
                     reviewBody = [baseComment, ...commentsToLeave].join('\n\n');
+                core.setOutput('review-comment', reviewBody);
                 yield updateReview({ owner: pr.owner, repo: pr.repo, pull_number: pr.number }, reviewBody);
                 // Finally close PR if warranted
                 if (shouldClosePr)
                     yield closePullRequest(pr.number);
             }
             else {
+                core.setOutput('review-comment', '');
                 yield updateReview({ owner: pr.owner, repo: pr.repo, pull_number: pr.number }, '');
             }
         }
@@ -394,7 +413,12 @@ function run() {
 }
 function closePullRequest(number) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield client.rest.pulls.update(Object.assign(Object.assign({}, utils_1.context.repo), { pull_number: number, state: 'closed' }));
+        try {
+            yield client.rest.pulls.update(Object.assign(Object.assign({}, utils_1.context.repo), { pull_number: number, state: 'closed' }));
+        }
+        catch (error) {
+            handleError(error, errors.closingPullRequest);
+        }
     });
 }
 function escapeChecks(checkResult, message) {
@@ -404,28 +428,44 @@ function escapeChecks(checkResult, message) {
     core.setOutput('issue-label-check', checkResult);
     core.setOutput('title-check', checkResult);
     core.setOutput('watched-files-check', checkResult);
+    core.setOutput('review-comment', '');
 }
 function listFiles(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data: files } = yield client.rest.pulls.listFiles(pullRequest);
-        return files;
+        try {
+            const { data: files } = yield client.rest.pulls.listFiles(pullRequest);
+            return files;
+        }
+        catch (error) {
+            handleError(error, errors.findExistingReview);
+            return [];
+        }
     });
 }
 function findExistingReview(pullRequest) {
     return __awaiter(this, void 0, void 0, function* () {
-        let review;
-        const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
-        review = reviews.find(innerReview => {
-            var _a, _b;
-            return ((_b = (_a = innerReview === null || innerReview === void 0 ? void 0 : innerReview.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : '') === 'github-actions[bot]';
-        });
-        if (review === undefined)
-            review = null;
-        return review;
+        core.debug(JSON.stringify({ function: 'findExistingReview', pullRequest }));
+        try {
+            let review;
+            const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
+            review = reviews.find(innerReview => {
+                var _a, _b;
+                return ((_b = (_a = innerReview === null || innerReview === void 0 ? void 0 : innerReview.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : '') === 'github-actions[bot]';
+            });
+            if (review === undefined)
+                review = null;
+            return review;
+        }
+        catch (error) {
+            if (error instanceof Error)
+                throw new Error(errors.findExistingReview);
+            return null;
+        }
     });
 }
 function updateReview(pullRequest, body) {
     return __awaiter(this, void 0, void 0, function* () {
+        core.debug(JSON.stringify({ function: 'updateReview', pullRequest, body }));
         const review = yield findExistingReview(pullRequest);
         // if blank body and no existing review, exit
         if (body === '' && review === null)
@@ -434,19 +474,39 @@ function updateReview(pullRequest, body) {
         if (body === (review === null || review === void 0 ? void 0 : review.body))
             return;
         // if no existing review, body non blank, create a review
+        core.debug(JSON.stringify({ function: 'updateReview', review, body }));
         if (review === null && body !== '') {
-            yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: 'COMMENT' }));
-            return;
+            try {
+                yield client.rest.pulls.createReview(Object.assign(Object.assign({}, pullRequest), { body, event: 'COMMENT' }));
+                return;
+            }
+            catch (error) {
+                handleError(error, errors.creatingReview);
+                return;
+            }
         }
         // if body blank and review exists, update it to show passed
         if (review !== null && body === '') {
-            yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' }));
-            return;
+            const payload = Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' });
+            try {
+                yield client.rest.pulls.updateReview(payload);
+                return;
+            }
+            catch (error) {
+                handleError(error, errors.updatingReview);
+                return;
+            }
         }
-        // if body non-blank and review exists, update it
         if (review !== null && body !== (review === null || review === void 0 ? void 0 : review.body)) {
-            yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body }));
-            return;
+            const payload = Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body });
+            try {
+                yield client.rest.pulls.updateReview(payload);
+                return;
+            }
+            catch (error) {
+                handleError(error, errors.updatingReview);
+                return;
+            }
         }
     });
 }
@@ -454,12 +514,18 @@ function userIsTeamMember(login, owner) {
     return __awaiter(this, void 0, void 0, function* () {
         if (login === owner)
             return true;
-        const { data: userOrgs } = yield client.request('GET /users/{user}/orgs', {
-            user: login
-        });
-        return userOrgs.some((userOrg) => {
-            return userOrg.login === owner;
-        });
+        try {
+            const { data: userOrgs } = yield client.request('GET /users/{user}/orgs', {
+                user: login
+            });
+            return userOrgs.some((userOrg) => {
+                return userOrg.login === owner;
+            });
+        }
+        catch (error) {
+            handleError(error, errors.checkingTeamMember);
+            return false;
+        }
     });
 }
 run();
