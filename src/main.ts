@@ -16,6 +16,7 @@ type PullRequestReview = {
   state: string
 }
 
+const hiddenMessage = '\n\n <!-- PR-Compilance-check-action-comment -->'
 const repoToken = core.getInput('repo-token')
 const ignoreAuthors = core.getMultilineInput('ignore-authors')
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members')
@@ -164,6 +165,8 @@ async function run(): Promise<void> {
           commentsToLeave.push(watchedFilesComment + filesList)
         }
       }
+      commentsToLeave.push(hiddenMessage)
+
       // Update Review as needed
       let reviewBody = ''
       if (commentsToLeave.length > 0)
@@ -215,7 +218,10 @@ async function findExistingReview(pullRequest: {
   let review
   const {data: reviews} = await client.rest.pulls.listReviews(pullRequest)
   review = reviews.find(innerReview => {
-    return (innerReview?.user?.login ?? '') === 'github-actions[bot]'
+    return (
+      (innerReview?.user?.login ?? '') === 'github-actions[bot]' &&
+      innerReview?.body?.includes(hiddenMessage)
+    )
   })
   if (review === undefined) review = null
   return review
@@ -243,7 +249,7 @@ async function updateReview(
     await client.rest.pulls.updateReview({
       ...pullRequest,
       review_id: review.id,
-      body: 'PR Compliance Checks Passed!'
+      body: `PR Compliance Checks Passed! ${hiddenMessage}`
     })
     return
   }

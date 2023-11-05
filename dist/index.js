@@ -252,6 +252,7 @@ const github = __importStar(__nccwpck_require__(5438));
 const utils_1 = __nccwpck_require__(3030);
 const checks_1 = __nccwpck_require__(2321);
 const check_issue_labels_1 = __nccwpck_require__(6810);
+const hiddenMessage = '\n\n <!-- PR-Compilance-check-action-comment -->';
 const repoToken = core.getInput('repo-token');
 const ignoreAuthors = core.getMultilineInput('ignore-authors');
 const ignoreTeamMembers = core.getBooleanInput('ignore-team-members');
@@ -373,6 +374,7 @@ function run() {
                         commentsToLeave.push(watchedFilesComment + filesList);
                     }
                 }
+                commentsToLeave.push(hiddenMessage);
                 // Update Review as needed
                 let reviewBody = '';
                 if (commentsToLeave.length > 0)
@@ -416,8 +418,9 @@ function findExistingReview(pullRequest) {
         let review;
         const { data: reviews } = yield client.rest.pulls.listReviews(pullRequest);
         review = reviews.find(innerReview => {
-            var _a, _b;
-            return ((_b = (_a = innerReview === null || innerReview === void 0 ? void 0 : innerReview.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : '') === 'github-actions[bot]';
+            var _a, _b, _c;
+            return (((_b = (_a = innerReview === null || innerReview === void 0 ? void 0 : innerReview.user) === null || _a === void 0 ? void 0 : _a.login) !== null && _b !== void 0 ? _b : '') === 'github-actions[bot]' &&
+                ((_c = innerReview === null || innerReview === void 0 ? void 0 : innerReview.body) === null || _c === void 0 ? void 0 : _c.includes(hiddenMessage)));
         });
         if (review === undefined)
             review = null;
@@ -440,7 +443,7 @@ function updateReview(pullRequest, body) {
         }
         // if body blank and review exists, update it to show passed
         if (review !== null && body === '') {
-            yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: 'PR Compliance Checks Passed!' }));
+            yield client.rest.pulls.updateReview(Object.assign(Object.assign({}, pullRequest), { review_id: review.id, body: `PR Compliance Checks Passed! ${hiddenMessage}` }));
             return;
         }
         // if body non-blank and review exists, update it
